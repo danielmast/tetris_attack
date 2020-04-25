@@ -1,5 +1,4 @@
 import time
-from PIL import ImageGrab
 import cv2
 import numpy as np
 import win32gui
@@ -8,6 +7,7 @@ import subprocess
 
 import tetrisplayer
 import gamekeyboard
+import grabscreen
 
 # Panel colors
 PURPLE =            [255,  24, 255]
@@ -106,8 +106,8 @@ def perform_countdown(seconds):
         seconds -= 1
 
 
-def take_screenshot(coords=None):
-    return ImageGrab.grab(bbox=coords)
+def get_screenshot(coords=None):
+    return grabscreen.grab_screen(region=coords)
 
 
 def determine_playfield_coords():
@@ -125,7 +125,7 @@ def determine_playfield_coords():
     return [game_start_x, game_start_y, game_end_x, game_end_y]
 
 
-def determine_cursor_coords(screenshot_pil):
+def determine_cursor_coords(screenshot):
     offset_x = -12
     offset_y = 1
 
@@ -135,9 +135,9 @@ def determine_cursor_coords(screenshot_pil):
         [255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
         [0, 0, 0, 255, 255, 255, 255, 0, 0, 0],
     ], dtype=np.uint8)
-    screenshot_cv2 = cv2.cvtColor(np.array(screenshot_pil), cv2.COLOR_RGB2GRAY)
+    screenshot_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
 
-    result = cv2.matchTemplate(screenshot_cv2, template, method=cv2.TM_CCOEFF)
+    result = cv2.matchTemplate(screenshot_gray, template, method=cv2.TM_CCOEFF)
     min_value, max_value, min_coords, max_coords = cv2.minMaxLoc(result)
 
     cursor_start_x = max_coords[0] + offset_x
@@ -183,7 +183,7 @@ def determine_tile_type(pixel):
         return None
 
 
-def determine_playfield_matrices(screenshot_pil, cursor_coords):
+def determine_playfield_matrices(screenshot, cursor_coords):
     playfield_matrices = np.zeros((PLAYFIELD_ROW_AMOUNT, PLAYFIELD_COLUMN_AMOUNT, TILE_TYPE_AMOUNT))
 
     start_x = round(TILE_SIZE / 2)
@@ -196,7 +196,7 @@ def determine_playfield_matrices(screenshot_pil, cursor_coords):
         while current_column < PLAYFIELD_COLUMN_AMOUNT:
             tile_x = int(start_x + (current_column * TILE_SIZE))
             tile_y = int(start_y + (current_row * TILE_SIZE))
-            tile_type = determine_tile_type(screenshot_pil.getpixel((tile_x, tile_y)))
+            tile_type = determine_tile_type(screenshot[tile_y, tile_x])
             if tile_type is not None:
                 playfield_matrices[current_row, current_column, tile_type] = 1
             current_column += 1
@@ -212,11 +212,11 @@ def main():
     tp = tetrisplayer.TetrisPlayer()
 
     while True:
-        playfield_screenshot = take_screenshot(playfield_coords)
+        playfield_screenshot = get_screenshot(playfield_coords)
         cursor_coords = determine_cursor_coords(playfield_screenshot)
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
-        action = tp.determine_next_action(playfields_matrices, cursor_position)
+        action = tp.determine_next_action(playfield_matrices, cursor_position)
         press_key(KEYS[action])
 
 
