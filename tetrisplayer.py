@@ -28,7 +28,7 @@ GARBAGE_STEEL = 8
 PANELS = [PANEL_PURPLE, PANEL_YELLOW, PANEL_GREEN, PANEL_AQUAMARINE, PANEL_RED, PANEL_GREY, PANEL_BLUE]
 GARBAGE = [GARBAGE_CONCRETE, GARBAGE_STEEL]
 
-class TetrisPlayer():
+class Laurens():
     action_log = []
     planned_actions = []
 
@@ -56,8 +56,10 @@ class TetrisPlayer():
             return self.planned_actions.pop(0)
 
     def determine_mistakes(self, playfield_matrices, cursor_position):
+        panels_matrices = playfield_matrices[:, :, PANELS]
         panels_top_row = self.find_panels_top_row(playfield_matrices)
         tiles_top_row = self.find_tiles_top_row(playfield_matrices)
+        garbage_rows = panels_top_row - tiles_top_row
 
         # Cursor above top panel
         if cursor_position[0] < panels_top_row:
@@ -68,8 +70,14 @@ class TetrisPlayer():
                 return STACK_UP
             elif panels_top_row > 9 and tiles_top_row > 2:
                 return STACK_UP
-        # Dangerous garbage
         # Tower
+        elif panels_top_row <= 5 and np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]) <= 9:
+            # Remove tower
+            print("Tiles in top 3 rows", np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]))
+        # Dangerous garbage
+        elif garbage_rows >= 5 or (garbage_rows > 0 and tiles_top_row < 2):
+            # Remove garbage
+            print("Garbage rows", garbage_rows)
 
     def determine_combinations(self, playfield_matrices, cursor_position):
         return None
@@ -80,7 +88,7 @@ class TetrisPlayer():
         else:
             return random.choice(MOVES)
 
-    def determine_next_action(self, playfield_matrices, cursor_position):
+    def get_action(self, playfield_matrices, cursor_position):
         action = self.determine_planned_actions()
         if action is None:
             action = self.determine_mistakes(playfield_matrices, cursor_position)
@@ -90,6 +98,5 @@ class TetrisPlayer():
             action = self.determine_default_behavior(playfield_matrices, cursor_position)
 
         self.action_log.append(action)
-        print("Tiles",self.find_tiles_top_row(playfield_matrices),"Panels",self.find_panels_top_row(playfield_matrices))
 
         return action
