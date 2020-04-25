@@ -20,7 +20,7 @@ def main(argv):
 
 def parse_args(argv):
     if len(argv) < 3:
-        raise Exception('Usage: main_old.py os player_mode bot1 [bot2]')
+        raise Exception('Usage: python tetris_attack.py os player_mode bot1 [bot2]')
 
     os = argv[1]
     if os != LINUX and os != WINDOWS:
