@@ -14,7 +14,7 @@ def main(argv):
     os = platform.system().lower()
     emulator.start_game(os=os)
     emulator.load_game(player_mode=player_mode)
-    bots.start_bots(os=os, bot1=bot1, bot2=bot2)
+    bots.start_bots(os=os, bot1_name=bot1, bot2_name=bot2)
 
 
 def parse_args(argv):
