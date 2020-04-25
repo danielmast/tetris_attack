@@ -1,0 +1,3 @@
+Reading config file D:\Development\Python\tetris_attack\nintendo\windows\snes9x.conf.
+Saving	config file	D:\Development\Python\tetris_attack\nintendo\windows\snes9x.conf
+Saving	config file	D:\Development\Python\tetris_attack\nintendo\windows\snes9x.conf
