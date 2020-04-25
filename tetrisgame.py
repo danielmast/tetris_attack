@@ -209,14 +209,14 @@ def determine_playfield_matrices(screenshot, cursor_coords):
 def main():
     start_game(start_emulator=True, wait_time=2, load_game_type="single_player")
     playfield_coords = determine_playfield_coords()
-    tp = tetrisplayer.TetrisPlayer()
+    bot = tetrisplayer.Laurens()
 
     while True:
         playfield_screenshot = get_screenshot(playfield_coords)
         cursor_coords = determine_cursor_coords(playfield_screenshot)
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
-        action = tp.determine_next_action(playfield_matrices, cursor_position)
+        action = bot.get_action(playfield_matrices, cursor_position)
         press_key(KEYS[action])
 
 
