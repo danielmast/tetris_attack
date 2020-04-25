@@ -7,10 +7,9 @@ WINDOWS = 'windows'
 SINGLE_PLAYER = 'single_player'
 VS = 'vs'
 
-EMULATOR_PATH = 'nintendo/windows/snes9x-x64.exe'
+EMULATOR_PATH_LINUX = 'zsnes'
+EMULATOR_PATH_WINDOWS = 'nintendo/windows/snes9x-x64.exe'
 ROM_PATH = 'nintendo/tetris_attack.smc'
-VS_SAVEGAME = 'nintendo/saves/Tetris Attack (U).000'
-MULTIPLAYER_SAVEGAME = 'nintendo/saves/Tetris Attack (U).001'
 
 def main(argv):
     os, player_mode, bot1, bot2 = parse_args(argv)
@@ -42,30 +41,20 @@ def parse_args(argv):
 def start_game(os, player_mode):
     if os == LINUX:
         start_game_linux(player_mode)
-        return
-
-    if os == WINDOWS:
+    elif os == WINDOWS:
         start_game_windows(player_mode)
-        return
-
-    raise Exception('Unexpected os: {}'.format(os))
-
-
-def start_game_linux(player_mode):
-    print('start game linux')
-
-def start_game_windows(player_mode):
-    subprocess.Popen([EMULATOR_PATH, ROM_PATH])
+    else:
+        raise Exception('Unexpected os: {}'.format(os))
 
     time.sleep(2)
 
-    if player_mode == VS:
-        # press_key("F1")
-        pass
-    elif player_mode == SINGLE_PLAYER:
-        # press_key("F2")
-        pass
 
+def start_game_linux(player_mode):
+    subprocess.Popen([EMULATOR_PATH_LINUX, ROM_PATH])
+
+
+def start_game_windows(player_mode):
+    subprocess.Popen([EMULATOR_PATH_WINDOWS, ROM_PATH])
 
 
 if __name__ == '__main__':
