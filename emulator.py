@@ -1,6 +1,8 @@
+# Standard library imports
 import time
 import subprocess
 
+# Constants
 LINUX = 'linux'
 WINDOWS = 'windows'
 EMULATOR_PATH_LINUX = 'zsnes'

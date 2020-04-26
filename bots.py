@@ -1,7 +1,11 @@
+# Standard library imports
 import time
+
+# Local application imports
 from laurens import Laurens
 from daniel import Daniel
 
+# Constants
 LAURENS = 'laurens'
 DANIEL = 'daniel'
 

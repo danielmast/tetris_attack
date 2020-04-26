@@ -1,8 +1,12 @@
+# Standard library imports
 import sys
 import platform
+
+# Local application imports
 import emulator
 import bots
 
+# Constants
 LINUX = 'linux'
 WINDOWS = 'windows'
 SINGLE_PLAYER = 'single_player'

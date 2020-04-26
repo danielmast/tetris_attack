@@ -1,12 +1,10 @@
-# direct inputs
-# source to this solution and code:
+# Source to code and and references
 # http://stackoverflow.com/questions/14489013/simulate-python-keypresses-for-controlling-a-game
 # https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
 
+# Standard library imports
 import ctypes
 import time
-
-SendInput = ctypes.windll.user32.SendInput
 
 KEYS = {
     'W': 0x11,
@@ -15,11 +13,15 @@ KEYS = {
     'D': 0x20,
     'F': 0x21,
     'G': 0x22,
+    'N': 0x31,
+    'M': 0x32,
     'F1': 0x3B,
     'F2': 0x3C,
     'F3': 0x3D,
     'F4': 0x3E
 }
+
+SendInput = ctypes.windll.user32.SendInput
 
 # C struct redefinitions
 PUL = ctypes.POINTER(ctypes.c_ulong)

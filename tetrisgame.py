@@ -1,11 +1,15 @@
+# Standard library imports
 import time
-import cv2
-import numpy as np
-import win32gui
 import math
 import subprocess
 
-import tetrisplayer
+# Third party imports
+import cv2
+import numpy as np
+import win32gui
+
+# Local application imports
+import laurens
 import gamekeyboard
 import grabscreen
 
@@ -209,7 +213,7 @@ def determine_playfield_matrices(screenshot, cursor_coords):
 def main():
     start_game(start_emulator=True, wait_time=2, load_game_type="single_player")
     playfield_coords = determine_playfield_coords()
-    bot = tetrisplayer.Laurens()
+    bot = laurens.Laurens()
 
     while True:
         playfield_screenshot = get_screenshot(playfield_coords)
