@@ -1,39 +1,37 @@
-# Local application imports
-from screencapturer.screencapturer import ScreenCapturer
+# Third party imports
+import cv2
+import numpy as np
+import win32gui
+import win32ui
+import win32con
 
-class WindowsScreenCapturer(ScreenCapturer):
+WINDOW_NAME = 'Tetris Attack (U) [!] - Snes9x 1.60'
 
-    def __init__(self):
-        super().__init__()
 
-    def capture_playfield(self, ):
-        hwin = win32gui.GetDesktopWindow()
+def capture_gamewindow():
+    hwnd = win32gui.FindWindow(None, WINDOW_NAME)
+    hwndex = win32gui.FindWindowEx(hwnd, 0, WINDOW_NAME, None)
+    hwnddc = win32gui.GetWindowDC(hwndex)
+    srcdc = win32ui.CreateDCFromHandle(hwnddc)
+    memdc = srcdc.CreateCompatibleDC()
+    bmp = win32ui.CreateBitmap()
 
-        if region:
-            left, top, x2, y2 = region
-            width = x2 - left + 1
-            height = y2 - top + 1
-        else:
-            width = win32api.GetSystemMetrics(win32con.SM_CXVIRTUALSCREEN)
-            height = win32api.GetSystemMetrics(win32con.SM_CYVIRTUALSCREEN)
-            left = win32api.GetSystemMetrics(win32con.SM_XVIRTUALSCREEN)
-            top = win32api.GetSystemMetrics(win32con.SM_YVIRTUALSCREEN)
+    x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
+    width = x2 - x1
+    height = y2 - y1
 
-        hwindc = win32gui.GetWindowDC(hwin)
-        srcdc = win32ui.CreateDCFromHandle(hwindc)
-        memdc = srcdc.CreateCompatibleDC()
-        bmp = win32ui.CreateBitmap()
-        bmp.CreateCompatibleBitmap(srcdc, width, height)
-        memdc.SelectObject(bmp)
-        memdc.BitBlt((0, 0), (width, height), srcdc, (left, top), win32con.SRCCOPY)
+    bmp.CreateCompatibleBitmap(srcdc, width, height)
+    memdc.SelectObject(bmp)
+    memdc.BitBlt((0, 0), (width, height), srcdc, (x1, y1), win32con.SRCCOPY)
 
-        signedIntsArray = bmp.GetBitmapBits(True)
-        img = np.fromstring(signedIntsArray, dtype='uint8')
-        img.shape = (height, width, 4)
+    signed_integers_array = bmp.GetBitmapBits(True)
+    img = np.fromstring(signed_integers_array, dtype='uint8')
+    img.shape = (height, width, 4)
 
-        srcdc.DeleteDC()
-        memdc.DeleteDC()
-        win32gui.ReleaseDC(hwin, hwindc)
-        win32gui.DeleteObject(bmp.GetHandle())
+    srcdc.DeleteDC()
+    memdc.DeleteDC()
+    win32gui.ReleaseDC(hwnd, hwnddc)
+    win32gui.DeleteObject(bmp.GetHandle())
 
-        return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)
+    return cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
+    #return cv2.cvtColor(img, cv2.COLOR_BGRA2RGB)

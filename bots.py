@@ -2,8 +2,8 @@
 import time
 
 # Local application imports
-from laurens import Laurens
-from daniel import Daniel
+from bot.laurens import Laurens
+from bot.daniel import Daniel
 
 # Constants
 LAURENS = 'laurens'
@@ -30,8 +30,7 @@ def start_bots(os, bot1_name, bot2_name):
 
 def get_bot(bot_name):
     if bot_name == LAURENS:
-        tiles = None
-        return Laurens(tiles)
+        return Laurens()
     elif bot_name == DANIEL:
         return Daniel()
     else:

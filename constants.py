@@ -2,8 +2,8 @@
 from types import SimpleNamespace
 
 OS = SimpleNamespace(**{
-    'LINUX': 'Linux',
-    'WINDOWS': 'Windows'
+    'LINUX': 'linux',
+    'WINDOWS': 'windows'
 })
 
 AMOUNT = SimpleNamespace(**{
@@ -17,8 +17,14 @@ AMOUNT = SimpleNamespace(**{
 PIXELSIZE = SimpleNamespace(**{
     'TILE_WIDTH': 16,
     'TILE_HEIGHT': 16,
+    'GAMEWINDOW_WIDTH': 256,
+    'GAMEWINDOW_HEIGHT': 224,
+    'GAMEWINDOW_OFFSET_X': 8,
+    'GAMEWINDOW_OFFSET_Y': 70,
     'PLAYFIELD_WIDTH': 16 * 6,
     'PLAYFIELD_HEIGHT': 16 * 12,
+    'PLAYFIELD_OFFSET_X': 8,
+    'PLAYFIELD_OFFSET_Y': 23,
     'CURSOR_WIDTH': 35,
     'CURSOR_HEIGHT': 20
 })
