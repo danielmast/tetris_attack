@@ -108,12 +108,13 @@ def determine_cursor_coords(screenshot):
     offset_x = -12
     offset_y = 1
 
-    template = np.array([
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [255, 255, 255, 255, 0, 255, 255, 255, 255, 255],
-        [255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
-        [0, 0, 0, 255, 255, 255, 255, 0, 0, 0],
-    ], dtype=np.uint8)
+    #template = np.array([
+    #    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #    [255, 255, 255, 255, 0, 255, 255, 255, 255, 255],
+    #    [255, 255, 255, 255, 255, 255, 255, 255, 255, 255],
+    #    [0, 0, 0, 255, 255, 255, 255, 0, 0, 0],
+    #], dtype=np.uint8)
+    template = np.load('npy/cursor_center.npy')
     screenshot_gray = cv2.cvtColor(np.array(screenshot), cv2.COLOR_RGB2GRAY)
 
     result = cv2.matchTemplate(screenshot_gray, template, method=cv2.TM_CCOEFF)
@@ -177,3 +178,4 @@ def start():
         cursor_coords = determine_cursor_coords(playfield_screenshot)
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
+        print(cursor_position)
