@@ -10,6 +10,9 @@ import win32gui
 # Local application imports
 import grabscreen
 
+cursor_position = []
+playfield_matrices = []
+
 AMOUNT = SimpleNamespace(**{
     'PLAYFIELD_ROWS': 12,
     'PLAYFIELD_COLUMNS': 6,
@@ -41,6 +44,7 @@ ACTION = SimpleNamespace(**{
     'STACK_UP' : 6,
     'DO_NOTHING' : 7
 })
+MOVES = [ACTION.MOVE_UP, ACTION.MOVE_DOWN, ACTION.MOVE_LEFT, ACTION.MOVE_RIGHT]
 
 TILE = SimpleNamespace(**{
     'PURPLE': 0,
@@ -53,6 +57,8 @@ TILE = SimpleNamespace(**{
     'CONCRETE': 7,
     'STEEL': 8
 })
+PANELS = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE, TILE.RED, TILE.GREY, TILE.BLUE]
+GARBAGE = [TILE.CONCRETE, TILE.STEEL]
 
 ACTION_KEY_MAPPING = {
     ACTION.MOVE_UP: 'W',
@@ -171,5 +177,3 @@ def start():
         cursor_coords = determine_cursor_coords(playfield_screenshot)
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
-
-        print(cursor_position)
