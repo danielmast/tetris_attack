@@ -1,6 +1,11 @@
 # Standard library imports
 from types import SimpleNamespace
 
+OS = SimpleNamespace(**{
+    'LINUX': 'Linux',
+    'WINDOWS': 'Windows'
+})
+
 AMOUNT = SimpleNamespace(**{
     'PLAYFIELD_ROWS': 12,
     'PLAYFIELD_COLUMNS': 6,
@@ -48,13 +53,27 @@ TILE = SimpleNamespace(**{
 PANELS = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE, TILE.RED, TILE.GREY, TILE.BLUE]
 GARBAGE = [TILE.CONCRETE, TILE.STEEL]
 
-ACTION_KEY_MAPPING = {
-    ACTION.MOVE_UP: 'W',
-    ACTION.MOVE_DOWN: 'S',
-    ACTION.MOVE_LEFT: 'A',
-    ACTION.MOVE_RIGHT: 'D',
-    ACTION.SWITCH_PANELS: 'F',
-    ACTION.STACK_UP: 'M'
+PLAYER = SimpleNamespace(**{
+    'ONE': 1,
+    'TWO': 2
+})
+
+ACTION_KEY_MAPPING_P1 = {
+    ACTION.MOVE_UP: 'w',
+    ACTION.MOVE_DOWN: 's',
+    ACTION.MOVE_LEFT: 'a',
+    ACTION.MOVE_RIGHT: 'd',
+    ACTION.SWITCH_PANELS: 'f',
+    ACTION.STACK_UP: 'm'
+}
+
+ACTION_KEY_MAPPING_P2 = {
+    ACTION.MOVE_UP: 'UP',
+    ACTION.MOVE_DOWN: 'DOWN',
+    ACTION.MOVE_LEFT: 'LEFT',
+    ACTION.MOVE_RIGHT: 'RIGHT',
+    ACTION.SWITCH_PANELS: 'SPACE',
+    ACTION.STACK_UP: 'R_CTRL'
 }
 
 COLOR_TILE_MAPPING = {
