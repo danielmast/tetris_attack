@@ -1,0 +1,72 @@
+# Standard library imports
+from types import SimpleNamespace
+
+AMOUNT = SimpleNamespace(**{
+    'PLAYFIELD_ROWS': 12,
+    'PLAYFIELD_COLUMNS': 6,
+    'TILE_TYPES': 9,
+    'CURSOR_ROWS': 11,
+    'CURSOR_COLUMNS': 4
+})
+
+PIXELSIZE = SimpleNamespace(**{
+    'TILE_WIDTH': 16,
+    'TILE_HEIGHT': 16,
+    'PLAYFIELD_WIDTH': 16 * 6,
+    'PLAYFIELD_HEIGHT': 16 * 12,
+    'CURSOR_WIDTH': 35,
+    'CURSOR_HEIGHT': 20
+})
+
+DIRECTION = SimpleNamespace(**{
+    'LEFT': -1,
+    'RIGHT': 1
+})
+
+ACTION = SimpleNamespace(**{
+    'MOVE_UP' : 1,
+    'MOVE_DOWN' : 2,
+    'MOVE_LEFT' : 3,
+    'MOVE_RIGHT' : 4,
+    'SWITCH_PANELS' : 5,
+    'STACK_UP' : 6,
+    'DO_NOTHING' : 7
+})
+MOVES = [ACTION.MOVE_UP, ACTION.MOVE_DOWN, ACTION.MOVE_LEFT, ACTION.MOVE_RIGHT]
+
+TILE = SimpleNamespace(**{
+    'PURPLE': 0,
+    'YELLOW': 1,
+    'GREEN': 2,
+    'AQUAMARINE': 3,
+    'RED': 4,
+    'GREY': 5,
+    'BLUE': 6,
+    'CONCRETE': 7,
+    'STEEL': 8
+})
+PANELS = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE, TILE.RED, TILE.GREY, TILE.BLUE]
+GARBAGE = [TILE.CONCRETE, TILE.STEEL]
+
+ACTION_KEY_MAPPING = {
+    ACTION.MOVE_UP: 'W',
+    ACTION.MOVE_DOWN: 'S',
+    ACTION.MOVE_LEFT: 'A',
+    ACTION.MOVE_RIGHT: 'D',
+    ACTION.SWITCH_PANELS: 'F',
+    ACTION.STACK_UP: 'M'
+}
+
+COLOR_TILE_MAPPING = {
+    " ".join(map(str, [255,  24, 255])): TILE.PURPLE,
+    " ".join(map(str, [255, 255,   0])): TILE.YELLOW,
+    " ".join(map(str, [  0, 255,   0])): TILE.GREEN,
+    " ".join(map(str, [  0, 255, 255])): TILE.AQUAMARINE,
+    " ".join(map(str, [255,  16,  16])): TILE.RED,
+    " ".join(map(str, [132, 134, 132])): TILE.GREY,
+    " ".join(map(str, [ 66, 113, 255])): TILE.BLUE,
+    " ".join(map(str, [  8,  81, 214])): TILE.CONCRETE,
+    " ".join(map(str, [148,  24,  24])): TILE.CONCRETE,
+    " ".join(map(str, [ 99, 105, 107])): TILE.STEEL,
+    " ".join(map(str, [ 57,  56,  57])): TILE.STEEL
+}
