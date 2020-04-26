@@ -30,7 +30,8 @@ def start_bots(os, bot1_name, bot2_name):
 
 def get_bot(bot_name):
     if bot_name == LAURENS:
-        return Laurens()
+        tiles = None
+        return Laurens(tiles)
     elif bot_name == DANIEL:
         return Daniel()
     else:

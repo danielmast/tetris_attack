@@ -13,32 +13,6 @@ import laurens
 import gamekeyboard
 import grabscreen
 
-# Panel colors
-PURPLE =            [255,  24, 255]
-YELLOW =            [255, 255,   0]
-GREEN =             [  0, 255,   0]
-AQUAMARINE =        [  0, 255, 255]
-RED =               [255,  16,  16]
-GREY =              [132, 134, 132]
-BLUE =              [ 66, 113, 255]
-
-# Garbage colors
-GARBAGE_BLUE =      [  8,  81, 214]
-GARBAGE_RED =       [148,  24,  24]
-GARBAGE_LIGHTGREY = [ 99, 105, 107]
-GARBAGE_DARKGREY =  [ 57,  56,  57]
-
-# Tile types
-PANEL_PURPLE = 0
-PANEL_YELLOW = 1
-PANEL_GREEN = 2
-PANEL_AQUAMARINE = 3
-PANEL_RED = 4
-PANEL_GREY = 5
-PANEL_BLUE = 6
-GARBAGE_CONCRETE = 7
-GARBAGE_STEEL = 8
-
 # Amounts
 PLAYFIELD_ROW_AMOUNT = 12
 PLAYFIELD_COLUMN_AMOUNT = 6
@@ -55,6 +29,11 @@ PLAYFIELD_HEIGHT = TILE_SIZE * PLAYFIELD_ROW_AMOUNT
 CURSOR_WIDTH = 35
 CURSOR_HEIGHT = 20
 
+# Emulator Settings
+WINDOW_NAME = "Tetris Attack (U) [!] - Snes9x 1.60"
+EMULATOR_PATH = "D:/Development/Python/tetris-attack/emulator/snes9x/snes9x-x64.exe"
+ROM_PATH = "Tetris Attack (U) [!].smc"
+
 # Actions
 MOVE_UP = 1
 MOVE_DOWN = 2
@@ -64,8 +43,25 @@ SWITCH_PANELS = 5
 STACK_UP = 6
 DO_NOTHING = 7
 
+# Other
+LEFT = -1
+RIGHT = 1
+
+# Tile types
+TILES = {
+    'PURPLE': 0,
+    'YELLOW': 1,
+    'GREEN': 2,
+    'AQUAMARINE': 3,
+    'RED': 4,
+    'GREY': 5,
+    'BLUE': 6,
+    'CONCRETE': 7,
+    'STEEL': 8
+}
+
 # Keyboard keys
-KEYS = {
+ACTION_KEY_MAPPING = {
     MOVE_UP: 'W',
     MOVE_DOWN: 'S',
     MOVE_LEFT: 'A',
@@ -74,21 +70,30 @@ KEYS = {
     STACK_UP: 'M'
 }
 
-# Directions
-LEFT = -1
-RIGHT = 1
 
-# Emulator
-WINDOW_NAME = "Tetris Attack (U) [!] - Snes9x 1.60"
-EMULATOR_PATH = "D:/Development/Python/tetris-attack/emulator/snes9x/snes9x-x64.exe"
-ROM_PATH = "Tetris Attack (U) [!].smc"
+def list_to_string(list):
+    return " ".join(map(str, list))
+
+# Color to tile mapping
+COLOR_TILE_MAPPING = {
+    list_to_string([255,  24, 255]): TILES['PURPLE'],
+    list_to_string([255, 255,   0]): TILES['YELLOW'],
+    list_to_string([  0, 255,   0]): TILES['GREEN'],
+    list_to_string([  0, 255, 255]): TILES['AQUAMARINE'],
+    list_to_string([255,  16,  16]): TILES['RED'],
+    list_to_string([132, 134, 132]): TILES['GREY'],
+    list_to_string([ 66, 113, 255]): TILES['BLUE'],
+    list_to_string([  8,  81, 214]): TILES['CONCRETE'],
+    list_to_string([148,  24,  24]): TILES['CONCRETE'],
+    list_to_string([ 99, 105, 107]): TILES['STEEL'],
+    list_to_string([ 57,  56,  57]): TILES['STEEL']
+}
 
 
 def press_key(key_string):
-    key = gamekeyboard.KEYS[key_string]
-    gamekeyboard.PressKey(key)
+    gamekeyboard.PressKey(key_string)
     time.sleep(0.1)
-    gamekeyboard.ReleaseKey(key)
+    gamekeyboard.ReleaseKey(key_string)
 
 
 def start_game(start_emulator=True, wait_time=2, load_game_type=None):
@@ -163,26 +168,10 @@ def determine_cursor_position(cursor_coords):
 
 
 def determine_tile_type(pixel):
-    color = list(pixel)
+    color_string = list_to_string(list(pixel))
 
-    if color == PURPLE:
-        return PANEL_PURPLE
-    elif color == YELLOW:
-        return PANEL_YELLOW
-    elif color == GREEN:
-        return PANEL_GREEN
-    elif color == AQUAMARINE:
-        return PANEL_AQUAMARINE
-    elif color == RED:
-        return PANEL_RED
-    elif color == GREY:
-        return PANEL_GREY
-    elif color == BLUE:
-        return PANEL_BLUE
-    elif color == GARBAGE_BLUE or color == GARBAGE_RED:
-        return GARBAGE_CONCRETE
-    elif color == GARBAGE_LIGHTGREY or color == GARBAGE_DARKGREY:
-        return GARBAGE_STEEL
+    if color_string in COLOR_TILE_MAPPING:
+        return COLOR_TILE_MAPPING[color_string]
     else:
         return None
 
@@ -213,7 +202,7 @@ def determine_playfield_matrices(screenshot, cursor_coords):
 def main():
     start_game(start_emulator=True, wait_time=2, load_game_type="single_player")
     playfield_coords = determine_playfield_coords()
-    bot = laurens.Laurens()
+    bot = laurens.Laurens(TILES)
 
     while True:
         playfield_screenshot = get_screenshot(playfield_coords)
@@ -221,7 +210,7 @@ def main():
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
         action = bot.get_action(playfield_matrices, cursor_position)
-        press_key(KEYS[action])
+        press_key(ACTION_KEY_MAPPING[action])
 
 
 main()

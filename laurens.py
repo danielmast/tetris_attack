@@ -1,3 +1,6 @@
+# Standard library imports
+from enum import Enum
+
 # Third party imports
 import numpy as np
 import random
@@ -5,41 +8,44 @@ import random
 # Local application imports
 from bot import Bot
 
+
 # Actions
 MOVE_UP = 1
 MOVE_DOWN = 2
 MOVE_LEFT = 3
 MOVE_RIGHT = 4
-SWAP = 5
+SWITCH_PANELS = 5
 STACK_UP = 6
 DO_NOTHING = 7
 
 # Action groups
 MOVES = [MOVE_UP, MOVE_DOWN, MOVE_LEFT, MOVE_RIGHT]
 
-# Tile types
-PANEL_PURPLE = 0
-PANEL_YELLOW = 1
-PANEL_GREEN = 2
-PANEL_AQUAMARINE = 3
-PANEL_RED = 4
-PANEL_GREY = 5
-PANEL_BLUE = 6
-GARBAGE_CONCRETE = 7
-GARBAGE_STEEL = 8
-
-# Tile groups
-PANELS = [PANEL_PURPLE, PANEL_YELLOW, PANEL_GREEN, PANEL_AQUAMARINE, PANEL_RED, PANEL_GREY, PANEL_BLUE]
-GARBAGE = [GARBAGE_CONCRETE, GARBAGE_STEEL]
-
 
 class Laurens(Bot):
     action_log = []
     planned_actions = []
+    TILES = []
+    PANELS = []
+    GARBAGE = []
 
-    def __init__(self):
+    def __init__(self, tiles):
         super().__init__('laurens')
         self.action_log = [DO_NOTHING]
+        self.TILES = tiles
+        self.PANELS = [
+            tiles['PURPLE'],
+            tiles['YELLOW'],
+            tiles['GREEN'],
+            tiles['AQUAMARINE'],
+            tiles['RED'],
+            tiles['GREY'],
+            tiles['BLUE']
+        ]
+        self.GARBAGE = [
+            tiles['CONCRETE'],
+            tiles['STEEL']
+        ]
 
     def find_tiles_top_row(self, playfield_matrices):
         channel_max = np.amax(playfield_matrices, axis=2)
@@ -52,7 +58,7 @@ class Laurens(Bot):
             return None
 
     def find_panels_top_row(self, playfield_matrices):
-        panel_matrices = playfield_matrices[:, :, PANELS]
+        panel_matrices = playfield_matrices[:, :, self.PANELS]
         panels_top_row = self.find_tiles_top_row(panel_matrices)
 
         return panels_top_row
@@ -62,7 +68,7 @@ class Laurens(Bot):
             return self.planned_actions.pop(0)
 
     def determine_mistakes(self, playfield_matrices, cursor_position):
-        panels_matrices = playfield_matrices[:, :, PANELS]
+        panels_matrices = playfield_matrices[:, :, self.PANELS]
         panels_top_row = self.find_panels_top_row(playfield_matrices)
         tiles_top_row = self.find_tiles_top_row(playfield_matrices)
         garbage_rows = panels_top_row - tiles_top_row
@@ -89,8 +95,8 @@ class Laurens(Bot):
         return None
 
     def determine_default_behavior(self, playfield_matrices, cursor_position):
-        if self.action_log[-1] != SWAP:
-            return SWAP
+        if self.action_log[-1] != SWITCH_PANELS:
+            return SWITCH_PANELS
         else:
             return random.choice(MOVES)
 
