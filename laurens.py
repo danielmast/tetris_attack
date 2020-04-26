@@ -1,6 +1,3 @@
-# Standard library imports
-from enum import Enum
-
 # Third party imports
 import numpy as np
 import random

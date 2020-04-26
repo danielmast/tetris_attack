@@ -1,1 +1,0 @@
-ROM image "Tetris Attack (U) [!].smc" was not found or could not be opened.
