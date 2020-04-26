@@ -1,6 +1,7 @@
 # Standard library imports
 import math
 from types import SimpleNamespace
+import time
 
 # Third party imports
 import cv2
@@ -172,10 +173,16 @@ def determine_playfield_matrices(screenshot, cursor_coords):
 
 def start():
     playfield_coords = determine_playfield_coords()
-
+    last_time = 0
     while True:
         playfield_screenshot = get_screenshot(playfield_coords)
         cursor_coords = determine_cursor_coords(playfield_screenshot)
         cursor_position = determine_cursor_position(cursor_coords)
         playfield_matrices = determine_playfield_matrices(playfield_screenshot, cursor_coords)
-        print(cursor_position)
+        current_time = time.time()
+        fps = 1 / (current_time - last_time)
+        print(time.sec, fps)
+        last_time = current_time
+
+
+start()
