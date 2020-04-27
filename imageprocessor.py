@@ -9,6 +9,7 @@ import numpy as np
 
 # Local application imports
 import constants
+import gamestate
 if platform.system().lower() == constants.OS.WINDOWS:
     import screencapturer.windows as screencapturer
 elif platform.system().lower() == constants.OS.LINUX:
@@ -17,20 +18,27 @@ elif platform.system().lower() == constants.OS.LINUX:
 
 class ImageProcessor():
     @staticmethod
-    def extract_playfield_from_gamewindow(gamewindow):
+    def extract_playfields_from_gamewindow(gamewindow):
+        playfields = []
+
         if gamewindow.shape[1] > constants.PIXELSIZE.GAMEWINDOW_WIDTH:
             gamewindow_offset_y = constants.PIXELSIZE.GAMEWINDOW_OFFSET_Y
             gamewindow_offset_x = constants.PIXELSIZE.GAMEWINDOW_OFFSET_X
         else:
             gamewindow_offset_y = 0
             gamewindow_offset_x = 0
+
         y1 = gamewindow_offset_y + constants.PIXELSIZE.PLAYFIELD_OFFSET_Y
         y2 = y1 + constants.PIXELSIZE.PLAYFIELD_HEIGHT
-        x1 = gamewindow_offset_x + constants.PIXELSIZE.PLAYFIELD_OFFSET_X
-        x2 = x1 + constants.PIXELSIZE.PLAYFIELD_WIDTH
-        playfield = gamewindow[y1:y2, x1:x2]
+        x1_p1 = gamewindow_offset_x + constants.PIXELSIZE.PLAYFIELD_OFFSET_X_P1
+        x2_p1 = x1_p1 + constants.PIXELSIZE.PLAYFIELD_WIDTH
+        x1_p2 = gamewindow_offset_x + constants.PIXELSIZE.PLAYFIELD_OFFSET_X_P2
+        x2_p2 = x1_p2 + constants.PIXELSIZE.PLAYFIELD_WIDTH
 
-        return playfield
+        playfields.append(gamewindow[y1:y2, x1_p1:x2_p1])
+        playfields.append(gamewindow[y1:y2, x1_p2:x2_p2])
+
+        return playfields
 
     @staticmethod
     def determine_cursor_coords(playfield):
@@ -94,12 +102,23 @@ class ImageProcessor():
 
     def start(self):
         while True:
+            state = gamestate.GameState()
             gamewindow = screencapturer.capture_gamewindow()
-            playfield = ImageProcessor.extract_playfield_from_gamewindow(gamewindow)
-            cursor_coords = ImageProcessor.determine_cursor_coords(playfield)
-            cursor_position = ImageProcessor.determine_cursor_position(cursor_coords)
-            playfield_matrices = ImageProcessor.determine_playfield_matrices(playfield, cursor_coords)
-            print(cursor_position)
+            playfields = ImageProcessor.extract_playfields_from_gamewindow(gamewindow)
+            cursor_coords = []
+            cursor_position = []
+            playfield_matrices = []
+
+            for player in constants.PLAYERS:
+                cursor_coords.append(ImageProcessor.determine_cursor_coords(playfields[player]))
+                cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords[player]))
+                playfield_matrices.append(ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player]))
+                print(cursor_position[player])
+
+            state.playfield_matrices = playfield_matrices
+            state.cursor_position = cursor_position
+            state.game_active = True
+
 
 ip = ImageProcessor()
 ip.start()
