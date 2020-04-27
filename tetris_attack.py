@@ -8,7 +8,6 @@ import multiprocessing
 import emulator
 import imageprocessor
 import constants
-import gamestate
 from bot.laurens import Laurens
 from bot.daniel import Daniel
 
@@ -25,13 +24,13 @@ def bot1_process():
     global state
     bot1 = Daniel(constants.PLAYER.ONE)
     while True:
-        print("Daniel", bot1.get_action(state))
+        bot1.do_action(state)
 
 def bot2_process():
     global state
     bot2 = Laurens(constants.PLAYER.TWO)
     while True:
-        print("Laurens", bot2.get_action(state))
+        bot2.do_action(state)
 
 def main(argv):
     #player_mode, bot1, bot2 = parse_args(argv)
@@ -39,16 +38,14 @@ def main(argv):
     #emulator.start_game(os=os)
     #emulator.load_game(player_mode=player_mode)
 
-    print("T0 started")
     imageprocessor_thread = threading.Thread(target=imageprocessor_process)
     imageprocessor_thread.start()
-    print("T1 started")
+
     bot1_thread = threading.Thread(target=bot1_process)
     bot1_thread.start()
-    print("T2 started")
+
     bot2_thread = threading.Thread(target=bot2_process)
     bot2_thread.start()
-    print("T3 started")
 
     #bots.start_bots(os=os, bot1_name=bot1, bot2_name=bot2)
 

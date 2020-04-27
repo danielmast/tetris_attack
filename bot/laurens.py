@@ -1,5 +1,6 @@
 # Standard library imports
 import random
+import platform
 
 # Third party imports
 import numpy as np
@@ -7,6 +8,10 @@ import numpy as np
 # Local application imports
 from bot.bot import Bot
 import constants
+if platform.system().lower() == constants.OS.WINDOWS:
+    import input.windows as input
+elif platform.system().lower() == constants.OS.LINUX:
+    import input.linux as input
 
 
 class Laurens(Bot):
@@ -75,7 +80,7 @@ class Laurens(Bot):
         else:
             return random.choice(constants.MOVES)
 
-    def get_action(self, state):
+    def do_action(self, state):
         if state is not None:
             self.playfield_matrices = state.playfield_matrices[self.player]
             self.cursor_position = state.cursor_position[self.player]
@@ -90,6 +95,5 @@ class Laurens(Bot):
 
             self.action_log.append(action)
 
-            return action
-        else:
-            return constants.ACTION.DO_NOTHING
+            # Perform action
+            input.do_action(self.player, action)

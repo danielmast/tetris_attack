@@ -7,5 +7,5 @@ class Bot(ABC):
         self.player = player
 
     @abstractmethod
-    def get_action(self, state):
+    def do_action(self, state):
         pass
