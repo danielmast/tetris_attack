@@ -8,8 +8,13 @@ class Daniel(Bot):
         super().__init__(player)
         global state
         self.player = player
-        self.playfield_matrices = state.playfield_matrices[player]
-        self.cursor_position = state.cursor_position[player]
+        self.playfield_matrices = None
+        self.cursor_position = None
 
-    def start(self):
-        return constants.ACTION.MOVE_DOWN
+    def get_action(self, state):
+        if state is not None:
+            self.playfield_matrices = state.playfield_matrices[self.player]
+            self.cursor_position = state.cursor_position[self.player]
+            return constants.ACTION.MOVE_DOWN
+        else:
+            return constants.ACTION.DO_NOTHING

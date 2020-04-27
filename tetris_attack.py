@@ -14,6 +14,24 @@ from bot.daniel import Daniel
 
 state = None
 
+def imageprocessor_process():
+    global state
+    ip = imageprocessor.ImageProcessor()
+    while True:
+        state = ip.get_state()
+        print("state loaded")
+
+def bot1_process():
+    global state
+    bot1 = Daniel(constants.PLAYER.ONE)
+    while True:
+        print("Daniel", bot1.get_action(state))
+
+def bot2_process():
+    global state
+    bot2 = Laurens(constants.PLAYER.TWO)
+    while True:
+        print("Laurens", bot2.get_action(state))
 
 def main(argv):
     #player_mode, bot1, bot2 = parse_args(argv)
@@ -21,16 +39,16 @@ def main(argv):
     #emulator.start_game(os=os)
     #emulator.load_game(player_mode=player_mode)
 
-    state = gamestate.GameState()
-    shared_memory = multiprocessing.shared_memory.SharedMemory(create=True, size=3e6)
-
-    ip = imageprocessor.ImageProcessor(shared_memory)
-    bot1 = Daniel(constants.PLAYER.ONE)
-    bot2 = Laurens(constants.PLAYER.TWO)
-
-    threading.Thread(target=ip.start()).start()
-    threading.Thread(target=bot1.start()).start()
-    threading.Thread(target=bot2.start()).start()
+    print("T0 started")
+    imageprocessor_thread = threading.Thread(target=imageprocessor_process)
+    imageprocessor_thread.start()
+    print("T1 started")
+    bot1_thread = threading.Thread(target=bot1_process)
+    bot1_thread.start()
+    print("T2 started")
+    bot2_thread = threading.Thread(target=bot2_process)
+    bot2_thread.start()
+    print("T3 started")
 
     #bots.start_bots(os=os, bot1_name=bot1, bot2_name=bot2)
 

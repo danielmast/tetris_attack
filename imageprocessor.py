@@ -101,7 +101,7 @@ class ImageProcessor():
 
         return playfield_matrices
 
-    def start(self):
+    def get_state(self):
         while True:
             gamewindow = screencapturer.capture_gamewindow()
             playfields = ImageProcessor.extract_playfields_from_gamewindow(gamewindow)
@@ -113,9 +113,10 @@ class ImageProcessor():
                 cursor_coords.append(ImageProcessor.determine_cursor_coords(playfields[player]))
                 cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords[player]))
                 playfield_matrices.append(ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player]))
-                print(cursor_position[player])
 
-            global state
+            state = gamestate.GameState()
             state.playfield_matrices = playfield_matrices
             state.cursor_position = cursor_position
             state.game_active = True
+
+            return state

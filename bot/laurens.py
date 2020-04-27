@@ -12,12 +12,11 @@ import constants
 class Laurens(Bot):
     def __init__(self, player):
         super().__init__(player)
-        global state
         self.player = player
-        self.playfield_matrices = state.playfield_matrices[player]
-        self.cursor_position = state.cursor_position[player]
         self.action_log = [constants.ACTION.DO_NOTHING]
         self.planned_actions = []
+        self.playfield_matrices = None
+        self.cursor_position = None
 
     def find_tiles_top_row(self, panels_only=False):
         playfield_matrices = self.playfield_matrices
@@ -59,11 +58,13 @@ class Laurens(Bot):
         # Tower
         elif panels_top_row <= 5 and np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]) <= 9:
             # Remove tower
-            print("Tiles in top 3 rows", np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]))
+            #print("Tiles in top 3 rows", np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]))
+            pass
         # Dangerous garbage
         elif garbage_rows >= 5 or (garbage_rows > 0 and tiles_top_row < 2):
             # Remove garbage
-            print("Garbage rows", garbage_rows)
+            #print("Garbage rows", garbage_rows)
+            pass
 
     def determine_combinations(self):
         return None
@@ -74,15 +75,21 @@ class Laurens(Bot):
         else:
             return random.choice(constants.MOVES)
 
-    def start(self):
-        action = self.determine_planned_actions()
-        if action is None:
-            action = self.determine_mistakes()
-        if action is None:
-            action = self.determine_combinations()
-        if action is None:
-            action = self.determine_default_behavior()
+    def get_action(self, state):
+        if state is not None:
+            self.playfield_matrices = state.playfield_matrices[self.player]
+            self.cursor_position = state.cursor_position[self.player]
 
-        self.action_log.append(action)
+            action = self.determine_planned_actions()
+            if action is None:
+                action = self.determine_mistakes()
+            if action is None:
+                action = self.determine_combinations()
+            if action is None:
+                action = self.determine_default_behavior()
 
-        return action
+            self.action_log.append(action)
+
+            return action
+        else:
+            return constants.ACTION.DO_NOTHING
