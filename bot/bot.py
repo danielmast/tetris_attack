@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 
 
 class Bot(ABC):
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, player):
+        self.player = player
 
     @abstractmethod
-    def get_action(self):
+    def start(self):
         pass

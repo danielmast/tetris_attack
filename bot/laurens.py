@@ -6,19 +6,25 @@ import numpy as np
 
 # Local application imports
 from bot.bot import Bot
-import tetrisgame as game
+import constants
 
 
 class Laurens(Bot):
-    action_log = []
-    planned_actions = []
+    def __init__(self, player):
+        super().__init__(player)
+        global state
+        self.player = player
+        self.playfield_matrices = state.playfield_matrices[player]
+        self.cursor_position = state.cursor_position[player]
+        self.action_log = [constants.ACTION.DO_NOTHING]
+        self.planned_actions = []
 
-    def __init__(self):
-        super().__init__('laurens')
-        self.action_log = [game.ACTION.DO_NOTHING]
+    def find_tiles_top_row(self, panels_only=False):
+        playfield_matrices = self.playfield_matrices
 
-    @staticmethod
-    def find_tiles_top_row(playfield_matrices):
+        if panels_only:
+            playfield_matrices = self.playfield_matrices[:, :, constants.PANELS]
+
         channel_max = np.amax(playfield_matrices, axis=2)
         column_max = np.amax(channel_max, axis=1)
         row_indices = np.where(column_max == 1)
@@ -28,32 +34,28 @@ class Laurens(Bot):
         else:
             return None
 
-    @staticmethod
-    def find_panels_top_row(playfield_matrices):
-        panel_matrices = playfield_matrices[:, :, game.PANELS]
-        panels_top_row = Laurens.find_tiles_top_row(panel_matrices)
-
-        return panels_top_row
+    def find_panels_top_row(self):
+        return self.find_tiles_top_row(panels_only=True)
 
     def determine_planned_actions(self):
         if len(self.planned_actions) > 0:
             return self.planned_actions.pop(0)
 
     def determine_mistakes(self):
-        panels_matrices = game.playfield_matrices[:, :, game.PANELS]
-        panels_top_row = Laurens.find_panels_top_row(game.playfield_matrices)
-        tiles_top_row = Laurens.find_tiles_top_row(game.playfield_matrices)
+        panels_matrices = self.playfield_matrices[:, :, constants.PANELS]
+        panels_top_row = self.find_panels_top_row()
+        tiles_top_row = self.find_tiles_top_row()
         garbage_rows = panels_top_row - tiles_top_row
 
         # Cursor above top panel
-        if game.cursor_position[0] < panels_top_row:
-            return game.ACTION.MOVE_DOWN
+        if self.cursor_position[0] < panels_top_row:
+            return constants.ACTION.MOVE_DOWN
         # Not enough tiles
         elif panels_top_row > 7:
             if tiles_top_row > 5:
-                return game.ACTION.STACK_UP
+                return constants.ACTION.STACK_UP
             elif panels_top_row > 9 and tiles_top_row > 2:
-                return game.ACTION.STACK_UP
+                return constants.ACTION.STACK_UP
         # Tower
         elif panels_top_row <= 5 and np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]) <= 9:
             # Remove tower
@@ -67,12 +69,12 @@ class Laurens(Bot):
         return None
 
     def determine_default_behavior(self):
-        if self.action_log[-1] != game.ACTION.SWITCH_PANELS:
-            return game.ACTION.SWITCH_PANELS
+        if self.action_log[-1] != constants.ACTION.SWITCH_PANELS:
+            return constants.ACTION.SWITCH_PANELS
         else:
-            return random.choice(game.MOVES)
+            return random.choice(constants.MOVES)
 
-    def get_action(self):
+    def start(self):
         action = self.determine_planned_actions()
         if action is None:
             action = self.determine_mistakes()

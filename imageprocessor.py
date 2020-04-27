@@ -2,6 +2,7 @@
 import math
 import time
 import platform
+from multiprocessing import shared_memory
 
 # Third party imports
 import cv2
@@ -102,7 +103,6 @@ class ImageProcessor():
 
     def start(self):
         while True:
-            state = gamestate.GameState()
             gamewindow = screencapturer.capture_gamewindow()
             playfields = ImageProcessor.extract_playfields_from_gamewindow(gamewindow)
             cursor_coords = []
@@ -115,10 +115,7 @@ class ImageProcessor():
                 playfield_matrices.append(ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player]))
                 print(cursor_position[player])
 
+            global state
             state.playfield_matrices = playfield_matrices
             state.cursor_position = cursor_position
             state.game_active = True
-
-
-ip = ImageProcessor()
-ip.start()

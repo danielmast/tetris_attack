@@ -60,6 +60,11 @@ TILE = SimpleNamespace(**{
 PANELS = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE, TILE.RED, TILE.GREY, TILE.BLUE]
 GARBAGE = [TILE.CONCRETE, TILE.STEEL]
 
+GAMEMODE = SimpleNamespace(**{
+    'SINGLE_PLAYER': 'single_player',
+    'VS': 'vs'
+})
+
 PLAYER = SimpleNamespace(**{
     'ONE': 0,
     'TWO': 1
