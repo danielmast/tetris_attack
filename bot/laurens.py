@@ -7,27 +7,28 @@ import numpy as np
 
 # Local application imports
 from bot.bot import Bot
-import constants
-if platform.system().lower() == constants.OS.WINDOWS:
-    import input.windows as input
-elif platform.system().lower() == constants.OS.LINUX:
-    import input.linux as input
+from constants import OS, ACTION, MOVES, PANELS
+if platform.system().lower() == OS.WINDOWS:
+    from input.windows import WindowsInput as Input
+elif platform.system().lower() == OS.LINUX:
+    from input.linux import LinuxInput as Input
 
 
 class Laurens(Bot):
     def __init__(self, player):
         super().__init__(player)
         self.player = player
-        self.action_log = [constants.ACTION.DO_NOTHING]
+        self.action_log = [ACTION.DO_NOTHING]
         self.planned_actions = []
         self.playfield_matrices = None
         self.cursor_position = None
+        self.input = Input()
 
     def find_tiles_top_row(self, panels_only=False):
         playfield_matrices = self.playfield_matrices
 
         if panels_only:
-            playfield_matrices = self.playfield_matrices[:, :, constants.PANELS]
+            playfield_matrices = self.playfield_matrices[:, :, PANELS]
 
         channel_max = np.amax(playfield_matrices, axis=2)
         column_max = np.amax(channel_max, axis=1)
@@ -46,20 +47,20 @@ class Laurens(Bot):
             return self.planned_actions.pop(0)
 
     def determine_mistakes(self):
-        panels_matrices = self.playfield_matrices[:, :, constants.PANELS]
+        panels_matrices = self.playfield_matrices[:, :, PANELS]
         panels_top_row = self.find_panels_top_row()
         tiles_top_row = self.find_tiles_top_row()
         garbage_rows = panels_top_row - tiles_top_row
 
         # Cursor above top panel
         if self.cursor_position[0] < panels_top_row:
-            return constants.ACTION.MOVE_DOWN
+            return ACTION.MOVE_DOWN
         # Not enough tiles
         elif panels_top_row > 7:
             if tiles_top_row > 5:
-                return constants.ACTION.STACK_UP
+                return ACTION.STACK_UP
             elif panels_top_row > 9 and tiles_top_row > 2:
-                return constants.ACTION.STACK_UP
+                return ACTION.STACK_UP
         # Tower
         elif panels_top_row <= 5 and np.sum(panels_matrices[panels_top_row:panels_top_row + 3, :, :]) <= 9:
             # Remove tower
@@ -75,10 +76,10 @@ class Laurens(Bot):
         return None
 
     def determine_default_behavior(self):
-        if self.action_log[-1] != constants.ACTION.SWITCH_PANELS:
-            return constants.ACTION.SWITCH_PANELS
+        if self.action_log[-1] != ACTION.SWITCH_PANELS:
+            return ACTION.SWITCH_PANELS
         else:
-            return random.choice(constants.MOVES)
+            return random.choice(MOVES)
 
     def do_action(self, state):
         if state is not None:
@@ -96,4 +97,4 @@ class Laurens(Bot):
             self.action_log.append(action)
 
             # Perform action
-            input.do_action(self.player, action)
+            self.input.do_action(self.player, action)

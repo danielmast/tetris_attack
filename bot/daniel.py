@@ -3,11 +3,11 @@ import platform
 
 # Local application imports
 from bot.bot import Bot
-import constants
-if platform.system().lower() == constants.OS.WINDOWS:
-    import input.windows as input
-elif platform.system().lower() == constants.OS.LINUX:
-    import input.linux as input
+from constants import OS, ACTION
+if platform.system().lower() == OS.WINDOWS:
+    from input.windows import WindowsInput as Input
+elif platform.system().lower() == OS.LINUX:
+    from input.linux import LinuxInput as Input
 
 
 class Daniel(Bot):
@@ -16,6 +16,7 @@ class Daniel(Bot):
         self.player = player
         self.playfield_matrices = None
         self.cursor_position = None
+        self.input = Input()
 
     def do_action(self, state):
         if state is not None:
@@ -23,5 +24,5 @@ class Daniel(Bot):
             self.cursor_position = state.cursor_position[self.player]
 
             # Perform action
-            action = constants.ACTION.MOVE_DOWN
-            input.do_action(self.player, action)
+            action = ACTION.MOVE_DOWN
+            self.input.do_action(self.player, action)

@@ -7,56 +7,61 @@ import multiprocessing
 # Local application imports
 import emulator
 import imageprocessor
-import constants
+from constants import BOT, PLAYER, GAMEMODE
 from bot.laurens import Laurens
 from bot.daniel import Daniel
 
 state = None
 
-def imageprocessor_process():
+
+def get_bot(bot_name, player):
+    if bot_name == BOT.LAURENS:
+        return Laurens(player)
+    elif bot_name == BOT.DANIEL:
+        return Daniel(player)
+    else:
+        raise Exception("Unexpected bot name: {}".format(bot_name))
+
+
+def start_imageprocessor(ip):
     global state
-    ip = imageprocessor.ImageProcessor()
     while True:
         state = ip.get_state()
-        print("state loaded")
 
-def bot1_process():
-    global state
-    bot1 = Daniel(constants.PLAYER.ONE)
-    while True:
-        bot1.do_action(state)
 
-def bot2_process():
+def start_bot(bot):
     global state
-    bot2 = Laurens(constants.PLAYER.TWO)
     while True:
-        bot2.do_action(state)
+        bot.do_action(state)
+
 
 def main(argv):
-    #player_mode, bot1, bot2 = parse_args(argv)
-    #os = platform.system().lower()
-    #emulator.start_game(os=os)
-    #emulator.load_game(player_mode=player_mode)
+    game_mode, bot1_name, bot2_name = parse_args(argv)
+    os = platform.system().lower()
+    emulator.start_game(os=os)
+    emulator.load_game(os=os, game_mode=game_mode)
 
-    imageprocessor_thread = threading.Thread(target=imageprocessor_process)
+    ip = imageprocessor.ImageProcessor()
+    imageprocessor_thread = threading.Thread(target=start_imageprocessor, args=(ip,))
     imageprocessor_thread.start()
 
-    bot1_thread = threading.Thread(target=bot1_process)
+    bot1 = get_bot(bot1_name, PLAYER.ONE)
+    bot1_thread = threading.Thread(target=start_bot, args=(bot1,))
     bot1_thread.start()
 
-    bot2_thread = threading.Thread(target=bot2_process)
-    bot2_thread.start()
-
-    #bots.start_bots(os=os, bot1_name=bot1, bot2_name=bot2)
+    if bot2_name is not None:
+        bot2 = get_bot(bot2_name, PLAYER.TWO)
+        bot2_thread = threading.Thread(target=start_bot, args=(bot2,))
+        bot2_thread.start()
 
 
 def parse_args(argv):
     if len(argv) < 3:
-        raise Exception('Usage: python tetris_attack.py player_mode bot1 [bot2]')
+        raise Exception('Usage: python tetris_attack.py game_mode bot1 [bot2]')
 
-    player_mode = argv[1]
-    if player_mode != constants.GAMEMODE.SINGLE_PLAYER and player_mode != constants.GAMEMODE.VS:
-        raise Exception('player_mode should be {} or {}'.format(constants.GAMEMODE.SINGLE_PLAYER, constants.GAMEMODE.VS))
+    game_mode = argv[1]
+    if game_mode != GAMEMODE.SINGLE_PLAYER and game_mode != GAMEMODE.VS:
+        raise Exception('game_mode should be {} or {}'.format(GAMEMODE.SINGLE_PLAYER, GAMEMODE.VS))
 
     bot1 = argv[2]
 
@@ -64,7 +69,7 @@ def parse_args(argv):
     if len(argv) == 4:
         bot2 = argv[3]
 
-    return player_mode, bot1, bot2
+    return game_mode, bot1, bot2
 
 
 if __name__ == '__main__':

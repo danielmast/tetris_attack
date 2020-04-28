@@ -71,6 +71,18 @@ PLAYER = SimpleNamespace(**{
 })
 PLAYERS = [PLAYER.ONE, PLAYER.TWO]
 
+BOT = SimpleNamespace(**{
+    'LAURENS': 'laurens',
+    'DANIEL': 'daniel'
+})
+
+EMULATOR = SimpleNamespace(**{
+    'PATH_LINUX': 'zsnes',
+    'PATH_WINDOWS': 'nintendo/windows/snes9x-x64.exe',
+    'ROM_FILENAME': 'tetris_attack.smc',
+    'ROM_PATH': 'nintendo/tetris_attack.smc'
+})
+
 ACTION_KEY_MAPPING_P1 = {
     ACTION.MOVE_UP: 'w',
     ACTION.MOVE_DOWN: 's',

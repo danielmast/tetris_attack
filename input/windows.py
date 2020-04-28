@@ -1,3 +1,7 @@
+# Source to code and and references
+# http://stackoverflow.com/questions/14489013/simulate-python-keypresses-for-controlling-a-game
+# https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
+
 # Standard library imports
 import ctypes
 import time
@@ -18,7 +22,14 @@ KEY_HEX_MAPPING = {
     'F1': 0x3B,
     'F2': 0x3C,
     'F3': 0x3D,
-    'F4': 0x3E
+    'F4': 0x3E,
+    'SPACE': 0x39,
+    'R_CTRL': 0xe01d,
+    'UP': 0xe048,
+    'DOWN': 0xe050,
+    'LEFT': 0xe04b,
+    'RIGHT': 0xe04d
+
 }
 SendInput = ctypes.windll.user32.SendInput
 
@@ -74,7 +85,7 @@ class WindowsInput(Input):
         raise Exception('Unexpected player: {}'.format(player))
 
     @staticmethod
-    def PressKey(key_string):
+    def key_down(key_string):
         key_hex = KEY_HEX_MAPPING[key_string]
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
@@ -83,7 +94,7 @@ class WindowsInput(Input):
         ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
     @staticmethod
-    def ReleaseKey(key_string):
+    def key_up(key_string):
         key_hex = KEY_HEX_MAPPING[key_string]
         extra = ctypes.c_ulong(0)
         ii_ = Input_I()
@@ -91,8 +102,12 @@ class WindowsInput(Input):
         x = Input_II(ctypes.c_ulong(1), ii_)
         ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
+    @staticmethod
+    def press_key(key):
+        WindowsInput.key_down(key)
+        time.sleep(0.1)
+        WindowsInput.key_up(key)
+
     def do_action(self, player, action):
         key = WindowsInput.get_key(player, action)
-        WindowsInput.PressKey(key)
-        time.sleep(0.1)
-        WindowsInput.ReleaseKey(key)
+        WindowsInput.press_key(key)

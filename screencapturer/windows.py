@@ -5,7 +5,7 @@ import win32gui
 import win32ui
 import win32con
 
-WINDOW_NAME = 'Tetris Attack (U) [!] - Snes9x 1.60'
+WINDOW_NAME = 'tetris_attack - Snes9x 1.60'
 
 
 def capture_gamewindow():

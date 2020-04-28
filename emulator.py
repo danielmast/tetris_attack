@@ -1,25 +1,38 @@
 # Standard library imports
 import time
 import subprocess
+import platform
 
-# Constants
-LINUX = 'linux'
-WINDOWS = 'windows'
-EMULATOR_PATH_LINUX = 'zsnes'
-EMULATOR_PATH_WINDOWS = 'nintendo/windows/snes9x-x64.exe'
-ROM_PATH = 'nintendo/tetris_attack.smc'
+# Local application imports
+from constants import OS, EMULATOR, GAMEMODE
+if platform.system().lower() == OS.WINDOWS:
+    from input.windows import WindowsInput as Input
+elif platform.system().lower() == OS.LINUX:
+    from input.linux import LinuxInput as Input
 
 
 def start_game(os):
-    if os == LINUX:
-        subprocess.Popen([EMULATOR_PATH_LINUX, ROM_PATH])
-    elif os == WINDOWS:
-        subprocess.Popen([EMULATOR_PATH_WINDOWS, ROM_PATH])
+    if os == OS.LINUX:
+        subprocess.Popen([EMULATOR.PATH_LINUX, EMULATOR.ROM_PATH])
+    elif os == OS.WINDOWS:
+        subprocess.Popen([EMULATOR.PATH_WINDOWS, EMULATOR.ROM_FILENAME])
     else:
         raise Exception('Unexpected os: {}'.format(os))
 
     time.sleep(2)
 
 
-def load_game(player_mode):
-    print ('load game with player_mode {}'.format(player_mode))
+def load_game(os, game_mode):
+    input = Input()
+
+    if os == OS.LINUX:
+        print ('load game with game_mode {}'.format(game_mode))
+    elif os == OS.WINDOWS:
+        if game_mode == GAMEMODE.VS:
+            print("vs")
+            input.press_key('F1')
+        elif game_mode == GAMEMODE.SINGLE_PLAYER:
+            print("single")
+            input.press_key('F2')
+
+    time.sleep(0.1)
