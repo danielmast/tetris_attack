@@ -118,7 +118,7 @@ class Laurens(Bot):
             panel_name = "Grey"
         elif combination[1] == TILE.BLUE:
             panel_name = "Blue"
-        print("Size:", combination[0], "Row start:", combination[2], "Panel:", panel_namedd)
+        print("Size:", combination[0], "Row start:", combination[2], "Panel:", panel_name)
 
     def move_panel(self, origin_position, target_position):
         if origin_position[1] != target_position[1]:    # Check if panel needs to move
@@ -163,28 +163,30 @@ class Laurens(Bot):
             best_combination = Laurens.find_best_combination(combinations)
             Laurens.print_combination(best_combination)
             best_combination_size, best_combination_panel, best_combination_index = best_combination
+            if best_combination_size is not None and best_combination_panel is not None and best_combination_index is not None:
+                minimum_sizes = [5, 4, 3, 3]
+                offset = [4, 3, 1, 2]
 
-            minimum_sizes = [5, 4, 3, 3]
-            offset = [4, 3, 1, 2]
+                panel_matrix = self.playfield_matrices[:, :, best_combination_panel]
+                target_row = int(best_combination_index)
+                target_column_indices = np.where(panel_matrix[target_row, :] == 1)
+                target_column = target_column_indices[0][0]
 
-            panel_matrix = self.playfield_matrices[:, :, best_combination_panel]
-            target_row = int(best_combination_index)
-            target_column_indices = np.where(panel_matrix[target_row, :] == 1)
-            target_column = target_column_indices[0][0]
+                counter = 0
+                while counter < len(minimum_sizes):
+                    if best_combination_size >= minimum_sizes[counter]:
+                        if panel_matrix[target_row + offset[counter], target_column] == 0:
+                            origin_column_indices = np.where(panel_matrix[target_row + offset[counter], :] == 1)
+                            origin_column = origin_column_indices[0][0]
+                            self.move_panel(
+                                origin_position=[target_row + offset[counter], origin_column],
+                                target_position=[target_row + offset[counter], target_column]
+                            )
+                            return True
 
-            counter = 0
-            while counter < len(minimum_sizes):
-                if best_combination_size >= minimum_sizes[counter]:
-                    if panel_matrix[target_row + offset[counter], target_column] == 0:
-                        origin_column_indices = np.where(panel_matrix[target_row + offset[counter], :] == 1)
-                        origin_column = origin_column_indices[0][0]
-                        self.move_panel(
-                            origin_position=[target_row + offset[counter], origin_column],
-                            target_position=[target_row + offset[counter], target_column]
-                        )
-                        return True
-
-                counter += 1
+                    counter += 1
+                else:
+                    return False
         else:
             return False
 
