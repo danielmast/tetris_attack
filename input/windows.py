@@ -1,6 +1,7 @@
 # Source to code and and references
 # http://stackoverflow.com/questions/14489013/simulate-python-keypresses-for-controlling-a-game
 # https://www.win.tue.nl/~aeb/linux/kbd/scancodes-1.html
+# https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html
 
 # Standard library imports
 import ctypes
@@ -19,16 +20,17 @@ KEY_HEX_MAPPING = {
     'g': 0x22,
     'n': 0x31,
     'm': 0x32,
+    'u': 0x16,
+    'j': 0x24,
+    'h': 0x23,
+    'k': 0x25,
+    'l': 0x26,
+    'y': 0x15,
     'F1': 0x3B,
     'F2': 0x3C,
     'F3': 0x3D,
     'F4': 0x3E,
-    'SPACE': 0x39,
-    'R_CTRL': 0xe01d,
-    'UP': 0xe048,
-    'DOWN': 0xe050,
-    'LEFT': 0xe04b,
-    'RIGHT': 0xe04d
+    'SPACE': 0x39
 
 }
 SendInput = ctypes.windll.user32.SendInput
@@ -72,7 +74,6 @@ class Input_II(ctypes.Structure):
 
 
 class WindowsInput(Input):
-
     def __init__(self):
         super().__init__()
 

@@ -26,13 +26,11 @@ def load_game(os, game_mode):
     input = Input()
 
     if os == OS.LINUX:
-        print ('load game with game_mode {}'.format(game_mode))
+        print('load game with game_mode {}'.format(game_mode))
     elif os == OS.WINDOWS:
         if game_mode == GAMEMODE.VS:
-            print("vs")
             input.press_key('F1')
         elif game_mode == GAMEMODE.SINGLE_PLAYER:
-            print("single")
             input.press_key('F2')
 
     time.sleep(0.1)
