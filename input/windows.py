@@ -9,30 +9,8 @@ import time
 
 # Local application imports
 from input.input import Input
-from constants import PLAYER, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2
+from constants import PLAYER, KEY_HEX_MAPPING, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2
 
-KEY_HEX_MAPPING = {
-    'w': 0x11,
-    'a': 0x1E,
-    's': 0x1F,
-    'd': 0x20,
-    'f': 0x21,
-    'g': 0x22,
-    'n': 0x31,
-    'm': 0x32,
-    'u': 0x16,
-    'j': 0x24,
-    'h': 0x23,
-    'k': 0x25,
-    'l': 0x26,
-    'y': 0x15,
-    'F1': 0x3B,
-    'F2': 0x3C,
-    'F3': 0x3D,
-    'F4': 0x3E,
-    'SPACE': 0x39
-
-}
 SendInput = ctypes.windll.user32.SendInput
 
 # C struct redefinitions

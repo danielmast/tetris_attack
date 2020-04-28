@@ -114,3 +114,27 @@ COLOR_TILE_MAPPING = {
     " ".join(map(str, [ 99, 105, 107])): TILE.STEEL,
     " ".join(map(str, [ 57,  56,  57])): TILE.STEEL
 }
+
+KEY_HEX_MAPPING = {
+    'a': 0x1E,
+    'b': 0x30,
+    'c': 0x2E,
+    'd': 0x20,
+    'j': 0x24,
+    'h': 0x23,
+    'f': 0x21,
+    'g': 0x22,
+    'k': 0x25,
+    'l': 0x26,
+    'm': 0x32,
+    'n': 0x31,
+    's': 0x1F,
+    'u': 0x16,
+    'w': 0x11,
+    'y': 0x15,
+    'F1': 0x3B,
+    'F2': 0x3C,
+    'F3': 0x3D,
+    'F4': 0x3E,
+    'SPACE': 0x39
+}
