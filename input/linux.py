@@ -24,7 +24,10 @@ class LinuxInput(Input):
         out, err = proc.communicate()
         return out.decode('utf-8')[:-1]
 
-    def do_action(self, player, action):
-        key = LinuxInput.get_key(player, action)
+    def press_key(self, key):
         Popen(["xdotool", "keydown", "-window", self.window_id, key], stdout=PIPE).communicate()
         Popen(["xdotool", "keyup", "-window", self.window_id, key], stdout=PIPE).communicate()
+
+    def do_action(self, player, action):
+        key = LinuxInput.get_key(player, action)
+        self.press_key(key)

@@ -26,7 +26,7 @@ def load_game(os, game_mode):
     input = Input()
 
     if os == OS.LINUX:
-        print('load game with game_mode {}'.format(game_mode))
+        input.press_key('F4')
     elif os == OS.WINDOWS:
         if game_mode == GAMEMODE.VS:
             input.press_key('F1')
