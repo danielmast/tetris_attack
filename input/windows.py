@@ -84,8 +84,9 @@ class WindowsInput(Input):
     @staticmethod
     def press_key(key):
         WindowsInput.key_down(key)
-        time.sleep(0.1)
+        time.sleep(0.01)
         WindowsInput.key_up(key)
+        time.sleep(0.02)
 
     def do_action(self, player, action):
         key = WindowsInput.get_key(player, action)
