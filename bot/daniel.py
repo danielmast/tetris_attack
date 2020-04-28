@@ -1,5 +1,6 @@
 # Standard library imports
 import platform
+import random
 
 # Local application imports
 from bot.bot import Bot
@@ -23,6 +24,6 @@ class Daniel(Bot):
             self.playfield_matrices = state.playfield_matrices[self.player]
             self.cursor_position = state.cursor_position[self.player]
 
-            # Perform action
-            action = ACTION.MOVE_DOWN
+            # Perform random action
+            action = random.choice([ACTION.SWITCH_PANELS, ACTION.MOVE_UP, ACTION.MOVE_DOWN, ACTION.MOVE_LEFT, ACTION.MOVE_RIGHT])
             self.input.do_action(self.player, action)

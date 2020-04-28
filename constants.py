@@ -46,6 +46,12 @@ ACTION = SimpleNamespace(**{
 })
 MOVES = [ACTION.MOVE_UP, ACTION.MOVE_DOWN, ACTION.MOVE_LEFT, ACTION.MOVE_RIGHT]
 
+ORIENTATION = SimpleNamespace(**{
+    'ROW' : 0,
+    'COLUMN' : 1
+})
+ORIENTATIONS = [ORIENTATION.ROW, ORIENTATION.COLUMN]
+
 TILE = SimpleNamespace(**{
     'PURPLE': 0,
     'YELLOW': 1,
