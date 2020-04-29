@@ -171,7 +171,11 @@ class Laurens(Bot):
                     for direction in DIRECTIONS:
                         if empty_tile_column_counter + gap_fill_column_offset * direction in range(0, AMOUNT.PLAYFIELD_COLUMNS):
                             if panel_in_matrix[fill_gap_row, empty_tile_column_counter + gap_fill_column_offset * direction] == 1:
-                                if tile_in_matrix[fill_gap_row, empty_tile_column_counter] == 0:
+                                if direction == DIRECTION.LEFT:
+                                    tiles_between = tile_in_matrix[fill_gap_row, empty_tile_column_counter - gap_fill_column_offset + 1:empty_tile_column_counter]
+                                elif direction == DIRECTION.RIGHT:
+                                    tiles_between = tile_in_matrix[fill_gap_row, empty_tile_column_counter:empty_tile_column_counter + gap_fill_column_offset - 1]
+                                if np.sum(tiles_between) == 0:
                                     origin_column = empty_tile_column_counter + gap_fill_column_offset * direction
                                     target_column = empty_tile_column_counter
                                     return fill_gap_row, origin_column, fill_gap_row, target_column
@@ -276,12 +280,31 @@ class Laurens(Bot):
         minimum_sizes = [3, 5, 4, 3, 3]
         offset = [0, 4, 3, 1, 2]
 
+        # Calculate target row and column
         panel_matrix = self.playfield_matrices[:, :, combination_panel]
         target_row = int(combination_index)
-        target_column_indices = np.where(panel_matrix == 1)
-        target_column_mode_result = stats.mode(target_column_indices[1])
-        target_column = target_column_mode_result[0][0]
+        combination_size = int(combination_size)
+        combination_matrix = panel_matrix[target_row:target_row + combination_size, :]
+        combination_column_indices = np.where(combination_matrix == 1)
+        combination_column_mode_result = stats.mode(combination_column_indices[1])
+        combination_column_mode = combination_column_mode_result[0][0]
+        target_column = combination_column_mode
 
+        # Minimize risk of accidental 3-combination
+        if combination_size >= 4:
+            while panel_matrix[target_row + 2, target_column] == 1:
+                if target_column == 5:
+                    target_column = 0
+                else:
+                    target_column += 1
+        if combination_size > 4 and target_row + 5 < AMOUNT.PLAYFIELD_ROWS:
+            while panel_matrix[target_row + 5, target_column] == 1:
+                if target_column == 5:
+                    target_column = 0
+                else:
+                    target_column += 1
+
+        # Move one panel to the right position
         counter = 0
         while counter < len(minimum_sizes):
             if combination_size >= minimum_sizes[counter]:
