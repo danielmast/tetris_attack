@@ -21,6 +21,7 @@ class Laurens(Bot):
         self.player = player
         self.playfield_matrices = None
         self.cursor_position = None
+        self.game_active = None
         self.input = Input()
 
     @staticmethod
@@ -131,6 +132,7 @@ class Laurens(Bot):
         tiles_in_row = np.sum(tile_in_matrix, axis=1)
         empty_tile_in_row_indices = np.where(tiles_in_row < AMOUNT.PLAYFIELD_COLUMNS)
 
+        lowest_empty_tile_row = None
         if len(empty_tile_in_row_indices[0]) > 0:
             lowest_empty_tile_row = empty_tile_in_row_indices[0][-1]
 
@@ -321,19 +323,17 @@ class Laurens(Bot):
 
     def do_action(self, state):
         if state is not None:
-            self.playfield_matrices = state.playfield_matrices[self.player]
-            self.cursor_position = state.cursor_position[self.player]
+            if state.game_active:
+                self.playfield_matrices = state.playfield_matrices[self.player]
+                self.cursor_position = state.cursor_position[self.player]
+                self.game_active = state.game_active
 
-            print("Start raise")
-            action_performed = self.raise_stack()
-            if not action_performed:
-                print("Start flatten")
-                action_performed = self.flatten_stack()
-            if not action_performed:
-                print("Start combination")
-                action_performed = self.make_largest_combination()
-            if not action_performed:
-                print("Start random")
-                action_performed = self.do_random_move()
+                action_performed = self.raise_stack()
+                if not action_performed:
+                    action_performed = self.flatten_stack()
+                if not action_performed:
+                    action_performed = self.make_largest_combination()
+                if not action_performed:
+                    action_performed = self.do_random_move()
 
-            return action_performed
+                return action_performed

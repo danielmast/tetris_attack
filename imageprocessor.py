@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 # Local application imports
-from constants import PIXELSIZE, OS, COLOR_TILE_MAPPING, PLAYERS, AMOUNT, TILE
+from constants import *
 import gamestate
 if platform.system().lower() == OS.WINDOWS:
     import screencapturer.windows as screencapturer
@@ -52,12 +52,13 @@ class ImageProcessor():
         result = cv2.matchTemplate(screenshot_gray, template, method=cv2.TM_CCOEFF)
         min_value, max_value, min_coords, max_coords = cv2.minMaxLoc(result)
 
-        cursor_start_x = max_coords[0] + offset_x
-        cursor_start_y = max_coords[1] + offset_y
-        cursor_end_x = cursor_start_x + PIXELSIZE.CURSOR_WIDTH
-        cursor_end_y = cursor_start_y + PIXELSIZE.CURSOR_HEIGHT
+        if max_value > 600000:
+            cursor_start_x = max_coords[0] + offset_x
+            cursor_start_y = max_coords[1] + offset_y
+            cursor_end_x = cursor_start_x + PIXELSIZE.CURSOR_WIDTH
+            cursor_end_y = cursor_start_y + PIXELSIZE.CURSOR_HEIGHT
 
-        return [cursor_start_x, cursor_start_y, cursor_end_x, cursor_end_y]
+            return [cursor_start_x, cursor_start_y, cursor_end_x, cursor_end_y]
 
     @staticmethod
     def determine_cursor_position(cursor_coords):
@@ -111,17 +112,21 @@ class ImageProcessor():
             cursor_coords = []
             cursor_position = []
             playfield_matrices = []
+            game_active = False
 
             for player in PLAYERS:
-                cursor_coords.append(ImageProcessor.determine_cursor_coords(playfields[player]))
-                cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords[player]))
-                playfield_matrices.append(
-                    ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player])
-                )
+                cursor_coords_player = ImageProcessor.determine_cursor_coords(playfields[player])
+                if cursor_coords_player is not None:
+                    cursor_coords.append(cursor_coords_player)
+                    cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords_player))
+                    playfield_matrices_player = ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords_player)
+                    if np.sum(playfield_matrices_player[:, :, PANELS]) > 0:
+                        playfield_matrices.append(playfield_matrices_player)
+                        game_active = True
 
             state = gamestate.GameState()
             state.playfield_matrices = playfield_matrices
             state.cursor_position = cursor_position
-            state.game_active = True
+            state.game_active = game_active
 
             return state
