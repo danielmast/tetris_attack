@@ -4,7 +4,6 @@ import platform
 
 # Third party imports
 import numpy as np
-from scipy import stats
 
 # Local application imports
 from bot.bot import Bot
@@ -14,15 +13,23 @@ if platform.system().lower() == OS.WINDOWS:
 elif platform.system().lower() == OS.LINUX:
     from input.linux import LinuxInput as Input
 
-
 class Laurens(Bot):
     def __init__(self, player):
         super().__init__(player)
+        self.state = None
         self.player = player
         self.playfield_matrices = None
         self.cursor_position = None
         self.game_active = None
         self.input = Input()
+
+    @property
+    def state(self):
+        return self.__state
+
+    @state.setter
+    def state(self, state):
+        self.__state = state
 
     @staticmethod
     def find_tiles_top_row(playfield_matrices):
@@ -62,6 +69,25 @@ class Laurens(Bot):
         combinations_line[0] = combination_starts[combination_filter]
         combinations_line[1] = combination_size[combination_filter]
         return combinations_line
+
+    @staticmethod
+    def find_closest_unobstructed_panel_in_row(starting_column, target_panel_row, panel_row, tile_row):
+        column_offset = 1
+        orientation_blocked = np.zeros((3,))
+        while column_offset < AMOUNT.PLAYFIELD_COLUMNS:
+            for orientation in ORIENTATIONS:
+                if orientation_blocked[orientation] == 0:
+                    search_column = starting_column + (column_offset * orientation)
+                    if search_column in range(0, AMOUNT.PLAYFIELD_COLUMNS):
+                        if tile_row[search_column] == 1 and panel_row[search_column] == 0:
+                            orientation_blocked[orientation] = 1
+                        else:
+                            if target_panel_row[search_column] == 1:
+                                return search_column
+                    else:
+                        orientation_blocked[orientation] = 1
+
+            column_offset += 1
 
     @staticmethod
     def find_combinations_in_row(panel_matrix):
@@ -166,20 +192,14 @@ class Laurens(Bot):
         empty_tile_column_counter = 0
         while empty_tile_column_counter < AMOUNT.PLAYFIELD_COLUMNS:
             if tile_in_matrix[lowest_empty_tile_row, empty_tile_column_counter] == 0:
-                gap_fill_column_offset = 1
-                while gap_fill_column_offset < AMOUNT.PLAYFIELD_COLUMNS:
-                    for direction in DIRECTIONS:
-                        if empty_tile_column_counter + gap_fill_column_offset * direction in range(0, AMOUNT.PLAYFIELD_COLUMNS):
-                            if panel_in_matrix[fill_gap_row, empty_tile_column_counter + gap_fill_column_offset * direction] == 1:
-                                if direction == DIRECTION.LEFT:
-                                    tiles_between = tile_in_matrix[fill_gap_row, empty_tile_column_counter - gap_fill_column_offset + 1:empty_tile_column_counter]
-                                elif direction == DIRECTION.RIGHT:
-                                    tiles_between = tile_in_matrix[fill_gap_row, empty_tile_column_counter:empty_tile_column_counter + gap_fill_column_offset - 1]
-                                if np.sum(tiles_between) == 0:
-                                    origin_column = empty_tile_column_counter + gap_fill_column_offset * direction
-                                    target_column = empty_tile_column_counter
-                                    return fill_gap_row, origin_column, fill_gap_row, target_column
-                    gap_fill_column_offset += 1
+                target_panel_row = panel_in_matrix[fill_gap_row, :]
+                panel_row = target_panel_row
+                tile_row = tile_in_matrix[fill_gap_row, :]
+                origin_column = Laurens.find_closest_unobstructed_panel_in_row(empty_tile_column_counter, target_panel_row, panel_row, tile_row)
+
+                if origin_column is not None:
+                    target_column = empty_tile_column_counter
+                    return fill_gap_row, origin_column, fill_gap_row, target_column
             empty_tile_column_counter += 1
 
     @staticmethod
@@ -202,7 +222,7 @@ class Laurens(Bot):
 
         if combination[0] == ORIENTATION.ROW:
             orientation_name = "Rows"
-        elif combination[0] == ORIENTATION.COLUMN:
+        else:  # Columns
             orientation_name = "Columns"
 
         print("Combination -", "Orientation:", orientation_name, "Size:", combination[1], "Row start:", combination[3], "Panel:", panel_name)
@@ -286,9 +306,8 @@ class Laurens(Bot):
         combination_size = int(combination_size)
         combination_matrix = panel_matrix[target_row:target_row + combination_size, :]
         combination_column_indices = np.where(combination_matrix == 1)
-        combination_column_mode_result = stats.mode(combination_column_indices[1])
-        combination_column_mode = combination_column_mode_result[0][0]
-        target_column = combination_column_mode
+        combination_column_average = np.average(combination_column_indices[1])
+        target_column = int(combination_column_average)
 
         # Minimize risk of accidental 3-combination
         if combination_size >= 4:
@@ -304,17 +323,20 @@ class Laurens(Bot):
                 else:
                     target_column += 1
 
-        # Move one panel to the right position
+        # A panel to the right position
         counter = 0
         while counter < len(minimum_sizes):
             if combination_size >= minimum_sizes[counter]:
                 if panel_matrix[target_row + offset[counter], target_column] == 0:
-                    origin_column_indices = np.where(panel_matrix[target_row + offset[counter], :] == 1)
-                    origin_column = origin_column_indices[0][0]
-                    return self.move_panel(
-                        origin_position=[target_row + offset[counter], origin_column],
-                        target_position=[target_row + offset[counter], target_column]
-                    )
+                    target_panel_row = self.playfield_matrices[target_row + offset[counter], :, combination_panel]
+                    panel_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, PANELS], axis=1)
+                    tile_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, :], axis=1)
+                    origin_column = Laurens.find_closest_unobstructed_panel_in_row(target_column, target_panel_row, panel_row, tile_row)
+                    if origin_column is not None:
+                        return self.move_panel(
+                            origin_position=[target_row + offset[counter], origin_column],
+                            target_position=[target_row + offset[counter], target_column]
+                        )
             counter += 1
 
     def make_row_combination(self, combination):
@@ -365,19 +387,18 @@ class Laurens(Bot):
         print("Random move -", "Origin:", origin_position, "Target:", target_position)
         return self.move_panel(origin_position, target_position)
 
-    def do_action(self, state):
-        if state is not None:
-            if state.game_active:
-                self.playfield_matrices = state.playfield_matrices[self.player]
-                self.cursor_position = state.cursor_position[self.player]
-                self.game_active = state.game_active
+    def start(self):
+        while True:
+            if self.state is not None:
+                if self.state.game_active:
+                    self.playfield_matrices = self.state.playfield_matrices[self.player]
+                    self.cursor_position = self.state.cursor_position[self.player]
+                    self.game_active = self.state.game_active
 
-                action_performed = self.raise_stack()
-                if not action_performed:
-                    action_performed = self.flatten_stack()
-                if not action_performed:
-                    action_performed = self.make_largest_combination()
-                if not action_performed:
-                    action_performed = self.do_random_move()
-
-                return action_performed
+                    action_performed = self.raise_stack()
+                    if not action_performed:
+                        action_performed = self.flatten_stack()
+                    if not action_performed:
+                        action_performed = self.make_largest_combination()
+                    if not action_performed:
+                        action_performed = self.do_random_move()

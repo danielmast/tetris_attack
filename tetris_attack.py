@@ -11,8 +11,6 @@ from constants import BOT, PLAYER, GAMEMODE
 from bot.laurens import Laurens
 from bot.daniel import Daniel
 
-state = None
-
 
 def get_bot(bot_name, player):
     if bot_name == BOT.LAURENS:
@@ -23,16 +21,12 @@ def get_bot(bot_name, player):
         raise Exception("Unexpected bot name: {}".format(bot_name))
 
 
-def start_imageprocessor(ip):
-    global state
+def start_imageprocessor(ip, bot1, bot2):
     while True:
         state = ip.get_state()
-
-
-def start_bot(bot):
-    global state
-    while True:
-        bot.do_action(state)
+        bot1.state = state
+        if bot2 is not None:
+            bot2.state = state
 
 
 def main(argv):
@@ -41,18 +35,19 @@ def main(argv):
     emulator.start_game(os=os)
     emulator.load_game(os=os, game_mode=game_mode)
 
-    ip = imageprocessor.ImageProcessor()
-    imageprocessor_thread = threading.Thread(target=start_imageprocessor, args=(ip,))
-    imageprocessor_thread.start()
-
     bot1 = get_bot(bot1_name, PLAYER.ONE)
-    bot1_thread = threading.Thread(target=start_bot, args=(bot1,))
+    bot1_thread = threading.Thread(target=bot1.start)
     bot1_thread.start()
 
+    bot2 = None
     if bot2_name is not None:
         bot2 = get_bot(bot2_name, PLAYER.TWO)
-        bot2_thread = threading.Thread(target=start_bot, args=(bot2,))
+        bot2_thread = threading.Thread(target=bot2.start)
         bot2_thread.start()
+
+    ip = imageprocessor.ImageProcessor()
+    imageprocessor_thread = threading.Thread(target=start_imageprocessor, args=(ip, bot1, bot2))
+    imageprocessor_thread.start()
 
 
 def parse_args(argv):
