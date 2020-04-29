@@ -13,6 +13,7 @@ if platform.system().lower() == OS.WINDOWS:
 elif platform.system().lower() == OS.LINUX:
     from input.linux import LinuxInput as Input
 
+
 class Laurens(Bot):
     def __init__(self, player):
         super().__init__(player)
@@ -73,19 +74,19 @@ class Laurens(Bot):
     @staticmethod
     def find_closest_unobstructed_panel_in_row(starting_column, target_panel_row, panel_row, tile_row):
         column_offset = 1
-        orientation_blocked = np.zeros((3,))
+        direction_blocked = np.zeros((3,))
         while column_offset < AMOUNT.PLAYFIELD_COLUMNS:
-            for orientation in ORIENTATIONS:
-                if orientation_blocked[orientation] == 0:
-                    search_column = starting_column + (column_offset * orientation)
+            for direction in DIRECTIONS:
+                if direction_blocked[direction] == 0:
+                    search_column = starting_column + (column_offset * direction)
                     if search_column in range(0, AMOUNT.PLAYFIELD_COLUMNS):
                         if tile_row[search_column] == 1 and panel_row[search_column] == 0:
-                            orientation_blocked[orientation] = 1
+                            direction_blocked[direction] = 1
                         else:
                             if target_panel_row[search_column] == 1:
                                 return search_column
                     else:
-                        orientation_blocked[orientation] = 1
+                        direction_blocked[direction] = 1
 
             column_offset += 1
 
@@ -126,7 +127,6 @@ class Laurens(Bot):
                     combinations_panels.append(Laurens.find_combinations_in_row(panel_matrix))
             combinations.append(combinations_panels)
         return combinations
-
 
     @staticmethod
     def find_best_combination(combinations, playfield_matrices):
@@ -192,11 +192,9 @@ class Laurens(Bot):
         empty_tile_column_counter = 0
         while empty_tile_column_counter < AMOUNT.PLAYFIELD_COLUMNS:
             if tile_in_matrix[lowest_empty_tile_row, empty_tile_column_counter] == 0:
-                target_panel_row = panel_in_matrix[fill_gap_row, :]
-                panel_row = target_panel_row
+                panel_row = panel_in_matrix[fill_gap_row, :]
                 tile_row = tile_in_matrix[fill_gap_row, :]
-                origin_column = Laurens.find_closest_unobstructed_panel_in_row(empty_tile_column_counter, target_panel_row, panel_row, tile_row)
-
+                origin_column = Laurens.find_closest_unobstructed_panel_in_row(empty_tile_column_counter, panel_row, panel_row, tile_row)
                 if origin_column is not None:
                     target_column = empty_tile_column_counter
                     return fill_gap_row, origin_column, fill_gap_row, target_column
@@ -234,10 +232,12 @@ class Laurens(Bot):
 
     def move_panel(self, origin_position, target_position):
         if origin_position[1] != target_position[1]:    # Check if panel needs to move
-            cursor_expected_position = list(self.cursor_position)
-            offset_cursor = 0                           # Offset for moving right
-            if origin_position[1] > target_position[1]:
-                offset_cursor = 1                       # Offset for moving left
+            cursor_expected_position = list(self.cursor_position)  # Moving panel right
+            offset_move = 0
+            offset_switch_panel = 1
+            if origin_position[1] > target_position[1]:  # Moving panel left
+                offset_move = 1
+                offset_switch_panel = 0
 
             while cursor_expected_position[0] < origin_position[0]:
                 self.input.do_action(self.player, ACTION.MOVE_DOWN)
@@ -247,20 +247,20 @@ class Laurens(Bot):
                 self.input.do_action(self.player, ACTION.MOVE_UP)
                 cursor_expected_position[0] -= 1
 
-            while cursor_expected_position[1] + offset_cursor > origin_position[1]:
+            while cursor_expected_position[1] + offset_move > origin_position[1]:
                 self.input.do_action(self.player, ACTION.MOVE_LEFT)
                 cursor_expected_position[1] -= 1
 
-            while cursor_expected_position[1] + offset_cursor < origin_position[1]:
+            while cursor_expected_position[1] + offset_move < origin_position[1]:
                 self.input.do_action(self.player, ACTION.MOVE_RIGHT)
                 cursor_expected_position[1] += 1
 
-            while cursor_expected_position[1] != target_position[1]:
-                if cursor_expected_position[1] < target_position[1]:
+            while cursor_expected_position[1] + offset_switch_panel != target_position[1]:
+                if cursor_expected_position[1] + offset_switch_panel < target_position[1]:
                     self.input.do_action(self.player, ACTION.SWITCH_PANELS)
                     self.input.do_action(self.player, ACTION.MOVE_RIGHT)
                     cursor_expected_position[1] += 1
-                elif cursor_expected_position[1] + offset_cursor > target_position[1]:
+                elif cursor_expected_position[1] + offset_switch_panel > target_position[1]:
                     self.input.do_action(self.player, ACTION.SWITCH_PANELS)
                     self.input.do_action(self.player, ACTION.MOVE_LEFT)
                     cursor_expected_position[1] -= 1
@@ -271,7 +271,6 @@ class Laurens(Bot):
     def raise_stack(self):
         tiles_top_row = Laurens.find_tiles_top_row(self.playfield_matrices)
         tiles_top_row_expected = tiles_top_row
-        panels_top_row = Laurens.find_panels_top_row(self.playfield_matrices)
 
         if tiles_top_row_expected > 6:
             while tiles_top_row_expected > 6:
@@ -305,7 +304,16 @@ class Laurens(Bot):
         target_row = int(combination_index)
         combination_size = int(combination_size)
         combination_matrix = panel_matrix[target_row:target_row + combination_size, :]
-        combination_column_indices = np.where(combination_matrix == 1)
+
+        # New
+        combination_indices = np.where(combination_matrix[2, :] == 1)
+        target_column_base = combination_indices[0][0]
+        if target_column_base + 1 == AMOUNT.PLAYFIELD_COLUMNS:
+            target_column = target_column_base - 1
+        else:
+            target_column = target_column_base + 1
+        """
+        combination_column_indices = np.where(combination_matrix == 1)        
         combination_column_average = np.average(combination_column_indices[1])
         target_column = int(combination_column_average)
 
@@ -322,6 +330,7 @@ class Laurens(Bot):
                     target_column = 0
                 else:
                     target_column += 1
+        """
 
         # A panel to the right position
         counter = 0
@@ -333,6 +342,7 @@ class Laurens(Bot):
                     tile_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, :], axis=1)
                     origin_column = Laurens.find_closest_unobstructed_panel_in_row(target_column, target_panel_row, panel_row, tile_row)
                     if origin_column is not None:
+                        print("Move - ","Origin:",[target_row + offset[counter], origin_column],"Target:",[target_row + offset[counter], target_column])
                         return self.move_panel(
                             origin_position=[target_row + offset[counter], origin_column],
                             target_position=[target_row + offset[counter], target_column]
