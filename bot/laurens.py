@@ -73,22 +73,23 @@ class Laurens(Bot):
 
     @staticmethod
     def find_closest_unobstructed_panel_in_row(starting_column, target_panel_row, panel_row, tile_row):
-        column_offset = 1
-        direction_blocked = np.zeros((3,))
-        while column_offset < AMOUNT.PLAYFIELD_COLUMNS:
-            for direction in DIRECTIONS:
-                if direction_blocked[direction] == 0:
-                    search_column = starting_column + (column_offset * direction)
-                    if search_column in range(0, AMOUNT.PLAYFIELD_COLUMNS):
-                        if tile_row[search_column] == 1 and panel_row[search_column] == 0:
-                            direction_blocked[direction] = 1
+        if not (tile_row[starting_column] == 1 and panel_row[starting_column] == 0):
+            column_offset = 1
+            direction_blocked = np.zeros((3,))
+            while column_offset < AMOUNT.PLAYFIELD_COLUMNS:
+                for direction in DIRECTIONS:
+                    if direction_blocked[direction] == 0:
+                        search_column = starting_column + (column_offset * direction)
+                        if search_column in range(0, AMOUNT.PLAYFIELD_COLUMNS):
+                            if tile_row[search_column] == 1 and panel_row[search_column] == 0:
+                                direction_blocked[direction] = 1
+                            else:
+                                if target_panel_row[search_column] == 1:
+                                    return search_column
                         else:
-                            if target_panel_row[search_column] == 1:
-                                return search_column
-                    else:
-                        direction_blocked[direction] = 1
+                            direction_blocked[direction] = 1
 
-            column_offset += 1
+                column_offset += 1
 
     @staticmethod
     def find_combinations_in_row(panel_matrix):
@@ -305,14 +306,15 @@ class Laurens(Bot):
         combination_size = int(combination_size)
         combination_matrix = panel_matrix[target_row:target_row + combination_size, :]
 
-        # New
         combination_indices = np.where(combination_matrix[2, :] == 1)
         target_column_base = combination_indices[0][0]
         if target_column_base + 1 == AMOUNT.PLAYFIELD_COLUMNS:
             target_column = target_column_base - 1
         else:
             target_column = target_column_base + 1
+
         """
+        # Begin old
         combination_column_indices = np.where(combination_matrix == 1)        
         combination_column_average = np.average(combination_column_indices[1])
         target_column = int(combination_column_average)
@@ -330,6 +332,7 @@ class Laurens(Bot):
                     target_column = 0
                 else:
                     target_column += 1
+        # End old
         """
 
         # A panel to the right position
@@ -338,15 +341,17 @@ class Laurens(Bot):
             if combination_size >= minimum_sizes[counter]:
                 if panel_matrix[target_row + offset[counter], target_column] == 0:
                     target_panel_row = self.playfield_matrices[target_row + offset[counter], :, combination_panel]
-                    panel_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, PANELS], axis=1)
+                    panel_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, PANELS], axis=0)
                     tile_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, :], axis=1)
                     origin_column = Laurens.find_closest_unobstructed_panel_in_row(target_column, target_panel_row, panel_row, tile_row)
                     if origin_column is not None:
-                        print("Move - ","Origin:",[target_row + offset[counter], origin_column],"Target:",[target_row + offset[counter], target_column])
+                        print("Move - ", "Origin:", [target_row + offset[counter], origin_column], "Target:", [target_row + offset[counter], target_column])
                         return self.move_panel(
                             origin_position=[target_row + offset[counter], origin_column],
                             target_position=[target_row + offset[counter], target_column]
                         )
+                    else:
+                        print("fail")
             counter += 1
 
     def make_row_combination(self, combination):

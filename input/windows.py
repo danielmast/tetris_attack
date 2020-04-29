@@ -86,7 +86,7 @@ class WindowsInput(Input):
         WindowsInput.key_down(key)
         time.sleep(1 / 60)
         WindowsInput.key_up(key)
-        time.sleep(2 / 60)
+        time.sleep(5 / 60)
 
     def do_action(self, player, action):
         key = WindowsInput.get_key(player, action)

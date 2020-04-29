@@ -43,30 +43,30 @@ class ImageProcessor():
 
     @staticmethod
     def determine_cursor_coords(playfield):
-        offset_x = -12
-        offset_y = 1
-
         template = np.load('npy/cursor_center.npy')
         screenshot_gray = cv2.cvtColor(np.array(playfield), cv2.COLOR_RGB2GRAY)
 
         result = cv2.matchTemplate(screenshot_gray, template, method=cv2.TM_CCOEFF)
         min_value, max_value, min_coords, max_coords = cv2.minMaxLoc(result)
 
-        if max_value > 600000:
-            cursor_start_x = max_coords[0] + offset_x
-            cursor_start_y = max_coords[1] + offset_y
-            cursor_end_x = cursor_start_x + PIXELSIZE.CURSOR_WIDTH
-            cursor_end_y = cursor_start_y + PIXELSIZE.CURSOR_HEIGHT
+        if max_value > 600000:  # Threshold coefficient
+            screenshot_determine_y = screenshot_gray[max_coords[1] + 2, max_coords[0] + 16]
+            if screenshot_determine_y == 255:
+                offset_y = 2
+            else:
+                offset_y = 3
 
-            return [cursor_start_x, cursor_start_y, cursor_end_x, cursor_end_y]
+            offset_x = -11
+
+            cursor_x = max_coords[0] + offset_x
+            cursor_y = max_coords[1] + offset_y
+
+            return cursor_x, cursor_y
 
     @staticmethod
     def determine_cursor_position(cursor_coords):
-        offset_row = 0
-        offset_column = 0
-
-        cursor_row = math.floor((cursor_coords[1] + (PIXELSIZE.TILE_HEIGHT / 2)) / PIXELSIZE.TILE_HEIGHT) + offset_row
-        cursor_column = math.floor((cursor_coords[0] + (PIXELSIZE.TILE_WIDTH / 2)) / PIXELSIZE.TILE_WIDTH) + offset_column
+        cursor_row = math.floor((cursor_coords[1] + (PIXELSIZE.TILE_HEIGHT / 2)) / PIXELSIZE.TILE_HEIGHT)
+        cursor_column = math.floor((cursor_coords[0] + (PIXELSIZE.TILE_WIDTH / 2)) / PIXELSIZE.TILE_WIDTH)
 
         return cursor_row, cursor_column
 
@@ -86,8 +86,8 @@ class ImageProcessor():
         screenshot = cv2.cvtColor(screenshot, cv2.COLOR_BGR2RGB)
         playfield_matrices = np.zeros((AMOUNT.PLAYFIELD_ROWS, AMOUNT.PLAYFIELD_COLUMNS, AMOUNT.TILE_TYPES))
 
-        start_x = round(PIXELSIZE.TILE_WIDTH / 2)
-        start_y = (cursor_coords[1] + round(PIXELSIZE.CURSOR_HEIGHT / 2)) % PIXELSIZE.TILE_HEIGHT
+        start_x = PIXELSIZE.TILE_WIDTH / 2
+        start_y = (cursor_coords[1] + (PIXELSIZE.CURSOR_HEIGHT / 2)) % PIXELSIZE.TILE_HEIGHT
         # Loop over all blocks
         current_row = 0
         current_column = 0
