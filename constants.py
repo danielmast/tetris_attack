@@ -9,7 +9,7 @@ OS = SimpleNamespace(**{
 AMOUNT = SimpleNamespace(**{
     'PLAYFIELD_ROWS': 12,
     'PLAYFIELD_COLUMNS': 6,
-    'TILE_TYPES': 9,
+    'TILE_TYPES': 10,
     'CURSOR_ROWS': 11,
     'CURSOR_COLUMNS': 4
 })
@@ -34,6 +34,7 @@ DIRECTION = SimpleNamespace(**{
     'LEFT': -1,
     'RIGHT': 1
 })
+DIRECTIONS = [DIRECTION.LEFT, DIRECTION.RIGHT]
 
 ACTION = SimpleNamespace(**{
     'MOVE_UP' : 1,
@@ -61,10 +62,13 @@ TILE = SimpleNamespace(**{
     'GREY': 5,
     'BLUE': 6,
     'CONCRETE': 7,
-    'STEEL': 8
+    'STEEL': 8,
+    'UNKNOWN': 9
 })
 PANELS = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE, TILE.RED, TILE.GREY, TILE.BLUE]
 GARBAGE = [TILE.CONCRETE, TILE.STEEL]
+TILES = [TILE.PURPLE, TILE.YELLOW, TILE.GREEN, TILE.AQUAMARINE,
+         TILE.RED, TILE.GREY, TILE.BLUE, TILE.CONCRETE, TILE.STEEL, TILE.UNKNOWN]
 
 GAMEMODE = SimpleNamespace(**{
     'SINGLE_PLAYER': 'single_player',
@@ -109,11 +113,17 @@ ACTION_KEY_MAPPING_P2 = {
 
 COLOR_TILE_MAPPING = {
     " ".join(map(str, [255,  24, 255])): TILE.PURPLE,
+    " ".join(map(str, [ 74,   0, 165])): TILE.PURPLE,
     " ".join(map(str, [255, 255,   0])): TILE.YELLOW,
+    " ".join(map(str, [ 99,  81,   0])): TILE.YELLOW,
     " ".join(map(str, [  0, 255,   0])): TILE.GREEN,
+    " ".join(map(str, [  0, 105,   0])): TILE.GREEN,
     " ".join(map(str, [  0, 255, 255])): TILE.AQUAMARINE,
+    " ".join(map(str, [  0, 121, 123])): TILE.AQUAMARINE,
     " ".join(map(str, [255,  16,  16])): TILE.RED,
+    " ".join(map(str, [107,   0,   0])): TILE.RED,
     " ".join(map(str, [132, 134, 132])): TILE.GREY,
+    " ".join(map(str, [198, 199, 198])): TILE.GREY,
     " ".join(map(str, [ 66, 113, 255])): TILE.BLUE,
     " ".join(map(str, [  8,  81, 214])): TILE.CONCRETE,
     " ".join(map(str, [148,  24,  24])): TILE.CONCRETE,

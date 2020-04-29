@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 
 # Local application imports
-from constants import PIXELSIZE, OS, COLOR_TILE_MAPPING, PLAYERS, AMOUNT
+from constants import PIXELSIZE, OS, COLOR_TILE_MAPPING, PLAYERS, AMOUNT, TILE
 import gamestate
 if platform.system().lower() == OS.WINDOWS:
     import screencapturer.windows as screencapturer
@@ -75,6 +75,8 @@ class ImageProcessor():
 
         if color_string in COLOR_TILE_MAPPING:
             return COLOR_TILE_MAPPING[color_string]
+        elif np.any(pixel > 90):
+            return TILE.UNKNOWN
         else:
             return None
 
@@ -88,6 +90,7 @@ class ImageProcessor():
         # Loop over all blocks
         current_row = 0
         current_column = 0
+
         while current_row < AMOUNT.PLAYFIELD_ROWS:
             while current_column < AMOUNT.PLAYFIELD_COLUMNS:
                 tile_x = int(start_x + (current_column * PIXELSIZE.TILE_WIDTH))
@@ -112,7 +115,9 @@ class ImageProcessor():
             for player in PLAYERS:
                 cursor_coords.append(ImageProcessor.determine_cursor_coords(playfields[player]))
                 cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords[player]))
-                playfield_matrices.append(ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player]))
+                playfield_matrices.append(
+                    ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player])
+                )
 
             state = gamestate.GameState()
             state.playfield_matrices = playfield_matrices

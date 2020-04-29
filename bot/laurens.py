@@ -4,10 +4,11 @@ import platform
 
 # Third party imports
 import numpy as np
+from scipy import stats
 
 # Local application imports
 from bot.bot import Bot
-from constants import OS, ACTION, ORIENTATION, PANELS, TILE, AMOUNT, ORIENTATIONS
+from constants import *
 if platform.system().lower() == OS.WINDOWS:
     from input.windows import WindowsInput as Input
 elif platform.system().lower() == OS.LINUX:
@@ -125,23 +126,40 @@ class Laurens(Bot):
         return best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index
 
     @staticmethod
-    def find_panel_and_empty_column(panel_in_matrix, tile_in_matrix, target_row):
-        column_counter = 0
-        while column_counter < AMOUNT.PLAYFIELD_COLUMNS - 1:
-            if tile_in_matrix[target_row, column_counter] == 0:
-                if panel_in_matrix[target_row, column_counter + 1] == 1:
-                    panel_column = column_counter + 1
-                    empty_column = column_counter
-                    return panel_column, empty_column
+    def find_lowest_empty_tile_row(playfield_matrices):
+        tile_in_matrix = np.sum(playfield_matrices, axis=2)
+        tiles_in_row = np.sum(tile_in_matrix, axis=1)
+        empty_tile_in_row_indices = np.where(tiles_in_row < AMOUNT.PLAYFIELD_COLUMNS)
 
-            elif panel_in_matrix[target_row, column_counter] == 1:
-                if tile_in_matrix[target_row, column_counter + 1] == 0:
-                    panel_column = column_counter
-                    empty_column = column_counter + 1
-                    return panel_column, empty_column
-            column_counter += 1
+        if len(empty_tile_in_row_indices[0]) > 0:
+            lowest_empty_tile_row = empty_tile_in_row_indices[0][-1]
 
-        return None
+        return lowest_empty_tile_row
+
+    @staticmethod
+    def find_panel_to_fill_the_gap(lowest_empty_tile_row, playfield_matrices):
+        tile_in_matrix = np.sum(playfield_matrices, axis=2)
+        panel_matrices = playfield_matrices[:, :, PANELS]
+        panel_in_matrix = np.sum(panel_matrices, axis=2)
+
+        fill_gap_row = lowest_empty_tile_row - 1
+        origin_column = None
+        target_column = None
+
+        empty_tile_column_counter = 0
+        while empty_tile_column_counter < AMOUNT.PLAYFIELD_COLUMNS:
+            if tile_in_matrix[lowest_empty_tile_row, empty_tile_column_counter] == 0:
+                gap_fill_column_offset = 1
+                while gap_fill_column_offset < AMOUNT.PLAYFIELD_COLUMNS:
+                    for direction in DIRECTIONS:
+                        if empty_tile_column_counter + gap_fill_column_offset * direction in range(0, AMOUNT.PLAYFIELD_COLUMNS):
+                            if panel_in_matrix[fill_gap_row, empty_tile_column_counter + gap_fill_column_offset * direction] == 1:
+                                if tile_in_matrix[fill_gap_row, empty_tile_column_counter] == 0:
+                                    origin_column = empty_tile_column_counter + gap_fill_column_offset * direction
+                                    target_column = empty_tile_column_counter
+                                    return fill_gap_row, origin_column, fill_gap_row, target_column
+                    gap_fill_column_offset += 1
+            empty_tile_column_counter += 1
 
     @staticmethod
     def print_combination(combination):
@@ -160,12 +178,12 @@ class Laurens(Bot):
             panel_name = "Grey"
         elif combination[2] == TILE.BLUE:
             panel_name = "Blue"
-        print("Orientation", combination[0], "Size:", combination[1], "Row start:", combination[3], "Panel:", panel_name)
+        print("Combination -", "Orientation", combination[0], "Size:", combination[1], "Row start:", combination[3], "Panel:", panel_name)
 
     @staticmethod
-    def print_panel_amounts(panels_matrices):
-        for panel in PANELS:
-            print("Panel", panel, ":", np.sum(panels_matrices[:, :, panel]))
+    def print_tile_amounts(playfield_matrices):
+        for tile in TILES:
+            print("Tile", tile, ":", np.sum(playfield_matrices[:, :, tile]))
 
     def move_panel(self, origin_position, target_position):
         if origin_position[1] != target_position[1]:    # Check if panel needs to move
@@ -201,6 +219,7 @@ class Laurens(Bot):
                     cursor_expected_position[1] -= 1
 
             self.input.do_action(self.player, ACTION.SWITCH_PANELS)
+            return True
 
     def raise_stack(self):
         tiles_top_row = Laurens.find_tiles_top_row(self.playfield_matrices)
@@ -213,41 +232,32 @@ class Laurens(Bot):
                 self.input.do_action(self.player, ACTION.STACK_UP)
                 tiles_top_row_expected -= 1
             return True
-        else:
-            return False
 
-
-    def flatten_stack_top(self):
+    def flatten_stack(self):
         playfield_matrices = self.playfield_matrices
-        panels_matrices = self.playfield_matrices[:, :, PANELS]
 
-        tile_in_matrix = np.sum(playfield_matrices, axis=2)
-        panel_in_matrix = np.sum(panels_matrices, axis=2)
+        lowest_empty_tile_row = Laurens.find_lowest_empty_tile_row(playfield_matrices)
+        panels_top_row = Laurens.find_panels_top_row(playfield_matrices)
 
-        panels_in_row = np.sum(panel_in_matrix, axis=1)
+        if lowest_empty_tile_row > panels_top_row:
+            panel_to_fill_the_gap = Laurens.find_panel_to_fill_the_gap(lowest_empty_tile_row, playfield_matrices)
 
-        narrow_stack_indices = np.where(np.logical_and(panels_in_row > 0, panels_in_row <= 2))
-        if len(narrow_stack_indices[0]) > 0:
-            target_row = narrow_stack_indices[0][0]
-            panel_and_empty_column = Laurens.find_panel_and_empty_column(panel_in_matrix, tile_in_matrix, target_row)
-            if panel_and_empty_column is not None:
-                panel_column, empty_column = panel_and_empty_column
-                origin_position = [target_row, panel_column]
-                target_position = [target_row, empty_column]
-                print("Flatten stack top -", "Row:", target_row, "Column:", panel_column, ">", empty_column)
+            if panel_to_fill_the_gap is not None:
+                origin_position = [panel_to_fill_the_gap[0], panel_to_fill_the_gap[1]]
+                target_position = [panel_to_fill_the_gap[2], panel_to_fill_the_gap[3]]
+                print("Flatten stack -", "Origin: ", origin_position, "Target:", target_position)
                 return self.move_panel(origin_position, target_position)
-
-        return False
 
     def make_column_combination(self, combination):
         combination_orientation, combination_size, combination_panel, combination_index = combination
-        minimum_sizes = [5, 4, 3, 3]
-        offset = [4, 3, 1, 2]
+        minimum_sizes = [3, 5, 4, 3, 3]
+        offset = [0, 4, 3, 1, 2]
 
         panel_matrix = self.playfield_matrices[:, :, combination_panel]
         target_row = int(combination_index)
-        target_column_indices = np.where(panel_matrix[target_row, :] == 1)
-        target_column = target_column_indices[0][0]
+        target_column_indices = np.where(panel_matrix == 1)
+        target_column_mode_result = stats.mode(target_column_indices[1])
+        target_column = target_column_mode_result[0][0]
 
         counter = 0
         while counter < len(minimum_sizes):
@@ -255,11 +265,10 @@ class Laurens(Bot):
                 if panel_matrix[target_row + offset[counter], target_column] == 0:
                     origin_column_indices = np.where(panel_matrix[target_row + offset[counter], :] == 1)
                     origin_column = origin_column_indices[0][0]
-                    self.move_panel(
+                    return self.move_panel(
                         origin_position=[target_row + offset[counter], origin_column],
                         target_position=[target_row + offset[counter], target_column]
                     )
-                    return True
             counter += 1
 
     def make_row_combination(self, combination):
@@ -276,11 +285,10 @@ class Laurens(Bot):
         while counter < len(sides_indices):
             if panel_matrix[target_row, center_column + offset[counter]] == 0:
                 origin_column = panel_column_indices[0][sides_indices[counter]]
-                self.move_panel(
+                return self.move_panel(
                     origin_position=[target_row, origin_column],
                     target_position=[target_row, center_column + offset[counter]]
                 )
-                return True
             counter += 1
 
     def make_largest_combination(self):
@@ -289,15 +297,14 @@ class Laurens(Bot):
 
         if Laurens.check_if_combinations_present(combinations):
             best_combination = Laurens.find_best_combination(combinations)
-            Laurens.print_combination(best_combination)
+            #Laurens.print_tile_amounts(self.playfield_matrices)
             best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index = best_combination
             if best_combination_index is not None:
+                Laurens.print_combination(best_combination)
                 if best_combination_orientation == ORIENTATION.COLUMN:
                     return self.make_column_combination(best_combination)
                 elif best_combination_orientation == ORIENTATION.ROW:
                     return self.make_row_combination(best_combination)
-
-        return False
 
     def do_random_move(self):
         random_lower = 0
@@ -309,21 +316,24 @@ class Laurens(Bot):
         random_target_column = random.randint(AMOUNT.PLAYFIELD_COLUMNS / 2, AMOUNT.PLAYFIELD_COLUMNS - 1)
         origin_position = [random_row, random_origin_column]
         target_position = [random_row, random_target_column]
-        self.move_panel(origin_position, target_position)
-
-        return True
+        print("Random move -", "Origin:", origin_position, "Target:", target_position)
+        return self.move_panel(origin_position, target_position)
 
     def do_action(self, state):
         if state is not None:
             self.playfield_matrices = state.playfield_matrices[self.player]
             self.cursor_position = state.cursor_position[self.player]
 
+            print("Start raise")
             action_performed = self.raise_stack()
             if not action_performed:
-                action_performed = self.flatten_stack_top()
+                print("Start flatten")
+                action_performed = self.flatten_stack()
             if not action_performed:
+                print("Start combination")
                 action_performed = self.make_largest_combination()
             if not action_performed:
+                print("Start random")
                 action_performed = self.do_random_move()
 
             return action_performed
