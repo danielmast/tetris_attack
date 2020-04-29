@@ -103,17 +103,23 @@ class Laurens(Bot):
 
 
     @staticmethod
-    def find_best_combination(combinations):
+    def find_best_combination(combinations, playfield_matrices):
         best_combination_size = 0
         best_combination_orientation = None
         best_combination_panel = None
         best_combination_index = None
 
+        # Combination in the top row for panels
+        panels_top_combination_size = 0
+        panels_top_combination_orientation = None
+        panels_top_combination_panel = None
+        panels_top_combination_index = None
+
         for orientation in ORIENTATIONS:
             orientation_results = combinations[orientation]
             for panel in PANELS:
                 line_results = orientation_results[panel]
-                if line_results[1].size > 0: # Check if array is empty
+                if line_results[1].size > 0:  # Check if array is empty
                     best_size_in_line = np.amax(np.array(line_results[1]))
 
                     if best_size_in_line > best_combination_size:
@@ -124,7 +130,16 @@ class Laurens(Bot):
                         best_combination_panel = panel
                         best_combination_index = np.array(line_results[0])[index]
 
-        return best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index
+                        if best_combination_index == Laurens.find_panels_top_row(playfield_matrices):
+                            panels_top_combination_orientation = best_combination_orientation
+                            panels_top_combination_size = best_combination_size
+                            panels_top_combination_panel = best_combination_panel
+                            panels_top_combination_index = best_combination_index
+
+        if Laurens.find_tiles_top_row(playfield_matrices) < Laurens.find_panels_top_row(playfield_matrices) and panels_top_combination_size > 0:  # Clean garbage combination
+            return panels_top_combination_orientation, panels_top_combination_size, panels_top_combination_panel, panels_top_combination_index
+        else:
+            return best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index
 
     @staticmethod
     def find_lowest_empty_tile_row(playfield_matrices):
@@ -180,7 +195,13 @@ class Laurens(Bot):
             panel_name = "Grey"
         elif combination[2] == TILE.BLUE:
             panel_name = "Blue"
-        print("Combination -", "Orientation", combination[0], "Size:", combination[1], "Row start:", combination[3], "Panel:", panel_name)
+
+        if combination[0] == ORIENTATION.ROW:
+            orientation_name = "Rows"
+        elif combination[0] == ORIENTATION.COLUMN:
+            orientation_name = "Columns"
+
+        print("Combination -", "Orientation:", orientation_name, "Size:", combination[1], "Row start:", combination[3], "Panel:", panel_name)
 
     @staticmethod
     def print_tile_amounts(playfield_matrices):
@@ -247,7 +268,7 @@ class Laurens(Bot):
             if panel_to_fill_the_gap is not None:
                 origin_position = [panel_to_fill_the_gap[0], panel_to_fill_the_gap[1]]
                 target_position = [panel_to_fill_the_gap[2], panel_to_fill_the_gap[3]]
-                print("Flatten stack -", "Origin: ", origin_position, "Target:", target_position)
+                print("Flatten stack -", "Origin:", origin_position, "Target:", target_position)
                 return self.move_panel(origin_position, target_position)
 
     def make_column_combination(self, combination):
@@ -298,7 +319,7 @@ class Laurens(Bot):
         combinations = Laurens.find_combinations_by_matrices(panels_matrices)
 
         if Laurens.check_if_combinations_present(combinations):
-            best_combination = Laurens.find_best_combination(combinations)
+            best_combination = Laurens.find_best_combination(combinations, self.playfield_matrices)
             #Laurens.print_tile_amounts(self.playfield_matrices)
             best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index = best_combination
             if best_combination_index is not None:

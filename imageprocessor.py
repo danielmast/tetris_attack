@@ -76,7 +76,7 @@ class ImageProcessor():
 
         if color_string in COLOR_TILE_MAPPING:
             return COLOR_TILE_MAPPING[color_string]
-        elif np.any(pixel > 90):
+        elif np.any(pixel > 100):
             return TILE.UNKNOWN
         else:
             return None
