@@ -3,4 +3,3 @@ Saving	config file	D:\Development\Python\tetris_attack\nintendo\windows\snes9x.c
 Found ROM file header (and ignored it).
 Map_LoROMMap
 "TETRIS ATTACK" [checksum ok] LoROM, 8Mbits, ROM, NTSC, SRAM:0Kbits, ID:AYLE, CRC32:6C128210
-Saving	config file	D:\Development\Python\tetris_attack\nintendo\windows\snes9x.conf

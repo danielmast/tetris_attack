@@ -65,10 +65,11 @@ class ImageProcessor():
 
     @staticmethod
     def determine_cursor_position(cursor_coords):
-        cursor_row = math.floor((cursor_coords[1] + (PIXELSIZE.TILE_HEIGHT / 2)) / PIXELSIZE.TILE_HEIGHT)
-        cursor_column = math.floor((cursor_coords[0] + (PIXELSIZE.TILE_WIDTH / 2)) / PIXELSIZE.TILE_WIDTH)
+        if cursor_coords is not None:
+            cursor_row = math.floor((cursor_coords[1] + (PIXELSIZE.TILE_HEIGHT / 2)) / PIXELSIZE.TILE_HEIGHT)
+            cursor_column = math.floor((cursor_coords[0] + (PIXELSIZE.TILE_WIDTH / 2)) / PIXELSIZE.TILE_WIDTH)
 
-        return cursor_row, cursor_column
+            return cursor_row, cursor_column
 
     @staticmethod
     def determine_tile_type(pixel):
@@ -109,20 +110,24 @@ class ImageProcessor():
         while True:
             gamewindow = screencapturer.capture_gamewindow()
             playfields = ImageProcessor.extract_playfields_from_gamewindow(gamewindow)
-            cursor_coords = []
-            cursor_position = []
-            playfield_matrices = []
-            game_active = False
+            cursor_coords = [None, None]
+            cursor_position = [None, None]
+            playfield_matrices = [None, None]
+            game_active = [False, False]
 
             for player in PLAYERS:
                 cursor_coords_player = ImageProcessor.determine_cursor_coords(playfields[player])
                 if cursor_coords_player is not None:
-                    cursor_coords.append(cursor_coords_player)
-                    cursor_position.append(ImageProcessor.determine_cursor_position(cursor_coords_player))
-                    playfield_matrices_player = ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords_player)
-                    if np.sum(playfield_matrices_player[:, :, PANELS]) > 0:
-                        playfield_matrices.append(playfield_matrices_player)
-                        game_active = True
+                    cursor_coords[player] = cursor_coords_player
+                    cursor_position_player = ImageProcessor.determine_cursor_position(cursor_coords[player])
+
+                    if cursor_position_player is not None:
+                        cursor_position[player] = cursor_position_player
+
+                        playfield_matrices_player = ImageProcessor.determine_playfield_matrices(playfields[player], cursor_coords[player])
+                        if np.sum(playfield_matrices_player[:, :, PANELS]) > 0:
+                            playfield_matrices[player] = playfield_matrices_player
+                            game_active[player] = True
 
             state = gamestate.GameState()
             state.playfield_matrices = playfield_matrices

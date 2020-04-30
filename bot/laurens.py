@@ -408,10 +408,10 @@ class Laurens(Bot):
     def start(self):
         while True:
             if self.state is not None:
-                if self.state.game_active:
+                if self.state.game_active[self.player]:
                     self.playfield_matrices = self.state.playfield_matrices[self.player]
                     self.cursor_position = self.state.cursor_position[self.player]
-                    self.game_active = self.state.game_active
+                    self.game_active = self.state.game_active[self.player]
 
                     action_performed = self.raise_stack()
                     if not action_performed:

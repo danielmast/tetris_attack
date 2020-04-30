@@ -1,6 +1,7 @@
 # Standard library imports
 import platform
 import random
+import time
 
 # Local application imports
 from bot.bot import Bot
@@ -32,10 +33,10 @@ class Daniel(Bot):
     def start(self):
         while True:
             if self.state is not None:
-                if self.state.game_active:
+                if self.state.game_active[self.player]:
                     self.playfield_matrices = self.state.playfield_matrices[self.player]
                     self.cursor_position = self.state.cursor_position[self.player]
-                    self.game_active = self.state.game_active
+                    self.game_active = self.state.game_active[self.player]
 
                     # Perform random action
                     action = random.choice([ACTION.SWITCH_PANELS, ACTION.MOVE_UP, ACTION.MOVE_DOWN, ACTION.MOVE_LEFT, ACTION.MOVE_RIGHT])
