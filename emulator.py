@@ -26,11 +26,11 @@ def load_game(os, game_mode):
     input = Input()
 
     if os == OS.LINUX:
-        input.press_key('F4')
+        input.key_press('F4')
     elif os == OS.WINDOWS:
         if game_mode == GAMEMODE.VS:
-            input.press_key('F1')
+            input.key_press('F1')
         elif game_mode == GAMEMODE.SINGLE_PLAYER:
-            input.press_key('F2')
+            input.key_press('F2')
 
     time.sleep(0.1)

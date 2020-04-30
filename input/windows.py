@@ -9,7 +9,7 @@ import time
 
 # Local application imports
 from input.input import Input
-from constants import PLAYER, KEY_HEX_MAPPING, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2
+from constants import PLAYER, KEY_HEX_MAPPING, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2, ACTION
 
 SendInput = ctypes.windll.user32.SendInput
 
@@ -82,12 +82,12 @@ class WindowsInput(Input):
         ctypes.windll.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
     @staticmethod
-    def press_key(key):
+    def key_press(key, sleep_after_key_down=1 / 60, sleep_after_key_press=2 / 60):
         WindowsInput.key_down(key)
-        time.sleep(1 / 60)
+        time.sleep(sleep_after_key_down)
         WindowsInput.key_up(key)
-        time.sleep(5 / 60)
+        time.sleep(sleep_after_key_press)
 
     def do_action(self, player, action):
         key = WindowsInput.get_key(player, action)
-        WindowsInput.press_key(key)
+        WindowsInput.key_press(key)

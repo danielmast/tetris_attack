@@ -1,6 +1,10 @@
+# Standard library imports
+from subprocess import Popen, PIPE
+import time
+
+# Local application imports
 from input.input import Input
 from constants import PLAYER, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2
-from subprocess import Popen, PIPE
 
 
 class LinuxInput(Input):
@@ -24,10 +28,11 @@ class LinuxInput(Input):
         out, err = proc.communicate()
         return out.decode('utf-8')[:-1]
 
-    def press_key(self, key):
+    def key_press(self, key, sleep_after_key_press=2 / 60):
         Popen(["xdotool", "keydown", "-window", self.window_id, key], stdout=PIPE).communicate()
         Popen(["xdotool", "keyup", "-window", self.window_id, key], stdout=PIPE).communicate()
+        time.sleep(sleep_after_key_press)
 
     def do_action(self, player, action):
         key = LinuxInput.get_key(player, action)
-        self.press_key(key)
+        self.key_press(key)

@@ -1,6 +1,7 @@
 # Standard library imports
 import random
 import platform
+import time
 
 # Third party imports
 import numpy as np
@@ -271,12 +272,21 @@ class Laurens(Bot):
 
     def raise_stack(self):
         tiles_top_row = Laurens.find_tiles_top_row(self.playfield_matrices)
+        panels_top_row = Laurens.find_panels_top_row(self.playfield_matrices)
         tiles_top_row_expected = tiles_top_row
+        panels_top_row_expected = panels_top_row
 
-        if tiles_top_row_expected > 6:
+        if tiles_top_row > 6:
             while tiles_top_row_expected > 6:
-                print("Stack up -", "Current row:", tiles_top_row_expected)
-                self.input.do_action(self.player, ACTION.STACK_UP)
+                print("Raise stack -", "Current Tile top row:", tiles_top_row_expected)
+                self.input.do_action(self.player, ACTION.RAISE_STACK)
+                tiles_top_row_expected -= 1
+            return True
+        elif panels_top_row > 9 and tiles_top_row > 0:
+            while panels_top_row_expected > 9 and tiles_top_row_expected > 0:
+                print("Raise stack -", "Current Panel top row:", panels_top_row_expected)
+                self.input.do_action(self.player, ACTION.RAISE_STACK)
+                panels_top_row_expected -= 1
                 tiles_top_row_expected -= 1
             return True
 
@@ -286,7 +296,12 @@ class Laurens(Bot):
         lowest_empty_tile_row = Laurens.find_lowest_empty_tile_row(playfield_matrices)
         panels_top_row = Laurens.find_panels_top_row(playfield_matrices)
 
-        if lowest_empty_tile_row > panels_top_row:
+        if panels_top_row > 6:
+            row_offset = 0
+        else:
+            row_offset = 1
+
+        if lowest_empty_tile_row > panels_top_row + row_offset:
             panel_to_fill_the_gap = Laurens.find_panel_to_fill_the_gap(lowest_empty_tile_row, playfield_matrices)
 
             if panel_to_fill_the_gap is not None:
@@ -313,12 +328,6 @@ class Laurens(Bot):
         else:
             target_column = target_column_base + 1
 
-        """
-        # Begin old
-        combination_column_indices = np.where(combination_matrix == 1)        
-        combination_column_average = np.average(combination_column_indices[1])
-        target_column = int(combination_column_average)
-
         # Minimize risk of accidental 3-combination
         if combination_size >= 4:
             while panel_matrix[target_row + 2, target_column] == 1:
@@ -332,8 +341,6 @@ class Laurens(Bot):
                     target_column = 0
                 else:
                     target_column += 1
-        # End old
-        """
 
         # A panel to the right position
         counter = 0
@@ -345,13 +352,10 @@ class Laurens(Bot):
                     tile_row = np.sum(self.playfield_matrices[target_row + offset[counter], :, :], axis=1)
                     origin_column = Laurens.find_closest_unobstructed_panel_in_row(target_column, target_panel_row, panel_row, tile_row)
                     if origin_column is not None:
-                        print("Move - ", "Origin:", [target_row + offset[counter], origin_column], "Target:", [target_row + offset[counter], target_column])
                         return self.move_panel(
                             origin_position=[target_row + offset[counter], origin_column],
                             target_position=[target_row + offset[counter], target_column]
                         )
-                    else:
-                        print("fail")
             counter += 1
 
     def make_row_combination(self, combination):
@@ -380,7 +384,6 @@ class Laurens(Bot):
 
         if Laurens.check_if_combinations_present(combinations):
             best_combination = Laurens.find_best_combination(combinations, self.playfield_matrices)
-            #Laurens.print_tile_amounts(self.playfield_matrices)
             best_combination_orientation, best_combination_size, best_combination_panel, best_combination_index = best_combination
             if best_combination_index is not None:
                 Laurens.print_combination(best_combination)
@@ -417,3 +420,5 @@ class Laurens(Bot):
                         action_performed = self.make_largest_combination()
                     if not action_performed:
                         action_performed = self.do_random_move()
+
+                    time.sleep(3 / 60)
