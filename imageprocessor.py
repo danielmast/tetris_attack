@@ -1,8 +1,6 @@
 # Standard library imports
 import math
-import time
 import platform
-from multiprocessing import shared_memory
 
 # Third party imports
 import cv2
@@ -19,21 +17,20 @@ elif platform.system().lower() == OS.LINUX:
 
 class ImageProcessor():
     @staticmethod
+    def resize_gamewindow(gamewindow, width=256, height=224):
+        gamewindow = cv2.resize(gamewindow, (width, height))
+
+        return gamewindow
+
+    @staticmethod
     def extract_playfields_from_gamewindow(gamewindow):
         playfields = []
 
-        if gamewindow.shape[1] > PIXELSIZE.GAMEWINDOW_WIDTH:
-            gamewindow_offset_y = PIXELSIZE.GAMEWINDOW_OFFSET_Y
-            gamewindow_offset_x = PIXELSIZE.GAMEWINDOW_OFFSET_X
-        else:
-            gamewindow_offset_y = 0
-            gamewindow_offset_x = 0
-
-        y1 = gamewindow_offset_y + PIXELSIZE.PLAYFIELD_OFFSET_Y
+        y1 = PIXELSIZE.PLAYFIELD_OFFSET_Y
         y2 = y1 + PIXELSIZE.PLAYFIELD_HEIGHT
-        x1_p1 = gamewindow_offset_x + PIXELSIZE.PLAYFIELD_OFFSET_X_P1
+        x1_p1 = PIXELSIZE.PLAYFIELD_OFFSET_X_P1
         x2_p1 = x1_p1 + PIXELSIZE.PLAYFIELD_WIDTH
-        x1_p2 = gamewindow_offset_x + PIXELSIZE.PLAYFIELD_OFFSET_X_P2
+        x1_p2 = PIXELSIZE.PLAYFIELD_OFFSET_X_P2
         x2_p2 = x1_p2 + PIXELSIZE.PLAYFIELD_WIDTH
 
         playfields.append(gamewindow[y1:y2, x1_p1:x2_p1])
@@ -109,6 +106,7 @@ class ImageProcessor():
     def get_state(self):
         while True:
             gamewindow = screencapturer.capture_gamewindow()
+            gamewindow = ImageProcessor.resize_gamewindow(gamewindow)
             playfields = ImageProcessor.extract_playfields_from_gamewindow(gamewindow)
             cursor_coords = [None, None]
             cursor_position = [None, None]

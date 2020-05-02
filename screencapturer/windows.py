@@ -1,6 +1,7 @@
 # Third party imports
 import cv2
 import numpy as np
+import pyautogui
 import win32gui
 import win32ui
 import win32con
@@ -16,9 +17,10 @@ def capture_gamewindow():
     memdc = srcdc.CreateCompatibleDC()
     bmp = win32ui.CreateBitmap()
 
-    x1, y1, x2, y2 = win32gui.GetWindowRect(hwnd)
+    x1, y1, x2, y2 = win32gui.GetClientRect(hwnd)
     width = x2 - x1
     height = y2 - y1
+    x1, y1 = win32gui.ClientToScreen(hwnd, (x1, y1))
 
     bmp.CreateCompatibleBitmap(srcdc, width, height)
     memdc.SelectObject(bmp)
