@@ -9,7 +9,7 @@ import time
 
 # Local application imports
 from input.input import Input
-from constants import PLAYER, KEY_HEX_MAPPING, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2, ACTION
+from constants import PLAYER, KEY_HEX_MAPPING, ACTION_KEY_MAPPING_P1, ACTION_KEY_MAPPING_P2
 
 SendInput = ctypes.windll.user32.SendInput
 
