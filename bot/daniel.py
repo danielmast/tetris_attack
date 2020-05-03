@@ -41,15 +41,14 @@ class Daniel(Bot):
                     self.cursor_position = self.state.cursor_position[self.player]
                     self.game_active = self.state.game_active[self.player]
 
-                    sub_matrices = self.playfield_matrices[:,:,0:9]
-                    prediction = self.model.predict(sub_matrices.reshape(1,648))
+                    prediction = self.model.predict(self.playfield_matrices.reshape(1,720))
                     prediction = prediction.reshape(12, 6)
                     prediction_max = np.max(prediction)
                     prediction_boolean = (prediction == prediction_max)
                     indices = np.nonzero(prediction_boolean)
 
-                    predicted_position = (indices[1][0], indices[0][0])
-
+                    predicted_position = (indices[0][0], indices[1][0])
+                    print('predicted_position', predicted_position)
                     self.move_cursor(predicted_position)
                     self.input.do_action(self.player, ACTION.SWITCH_PANELS)
 
