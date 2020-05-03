@@ -133,12 +133,23 @@ COLOR_TILE_MAPPING = {
     " ".join(map(str, [107,   0,   0])): TILE.RED,
     " ".join(map(str, [104,   0,   0])): TILE.RED,
     " ".join(map(str, [132, 134, 132])): TILE.GREY,
+    " ".join(map(str, [128, 128, 128])): TILE.GREY,
     " ".join(map(str, [198, 199, 198])): TILE.GREY,
+    " ".join(map(str, [192, 192, 192])): TILE.GREY,
     " ".join(map(str, [ 66, 113, 255])): TILE.BLUE,
+    " ".join(map(str, [ 64, 112, 248])): TILE.BLUE,
+    " ".join(map(str, [  0,   0, 173])): TILE.BLUE,
+    " ".join(map(str, [  0,   0, 168])): TILE.BLUE,
     " ".join(map(str, [  8,  81, 214])): TILE.CONCRETE,
+    " ".join(map(str, [  8,  80, 208])): TILE.CONCRETE,
     " ".join(map(str, [148,  24,  24])): TILE.CONCRETE,
+    " ".join(map(str, [144,  24,  24])): TILE.CONCRETE,
     " ".join(map(str, [ 99, 105, 107])): TILE.STEEL,
-    " ".join(map(str, [ 57,  56,  57])): TILE.STEEL
+    " ".join(map(str, [ 96, 104, 104])): TILE.STEEL,
+    " ".join(map(str, [ 57,  56,  57])): TILE.STEEL,
+    " ".join(map(str, [ 56,  56,  56])): TILE.STEEL,
+    " ".join(map(str, [165, 165, 165])): TILE.STEEL,
+    " ".join(map(str, [160, 160, 160])): TILE.STEEL
 }
 
 KEY_HEX_MAPPING = {
